@@ -5,7 +5,7 @@
 # ensuring that the author list and other fields remain accurate.
 
 cff-version: 1.2.0
-title: FIXME
+title: Introduction to data-driven modelling with geospatial data
 message: >-
   Please cite this lesson using the information in this file
   when you refer to it in publications, and/or if you
@@ -13,10 +13,19 @@ message: >-
   training material.
 type: dataset
 authors:
-  - given-names: FIXME
-    family-names: FIXME
+  - given-names: Gabriele
+    family-names: Tijunaityte
+  - given-names: Sarah
+    family-names: Alidoost
+  - given-names: Rosa
+    family-names: Aguilar
+  - given-names: Raul
+    family-names: Zurita Milla
+  - given-names: Ellen-Wien 
+    family-names: Augustijn
+ 
 abstract: >-
-  FIXME Replace this with a short abstract describing the
-  lesson, e.g. its target audience and main intended
-  learning objectives.
+  Understand the key concepts of geospatial ML modelling and spatio-temporal dependencies. 
+  For scientists with ML experience and familiar with geospatial data, 
+  moving into geospatial applications.
 license: CC-BY-4.0
