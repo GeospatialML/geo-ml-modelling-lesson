@@ -1498,14 +1498,108 @@ dataset from Helber et al. (2019)</div>
 </h3>
 <pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" tabindex="-1" aria-label="code-block-1-1"></a><span class="im">from</span> torchgeo.datasets <span class="im">import</span> EuroSAT100, EuroSAT</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1" aria-label="code-block-1-2"></a></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1" aria-label="code-block-1-3"></a>dataset <span class="op">=</span> EuroSAT100(<span class="st">'data/'</span>, split<span class="op">=</span><span class="st">'train'</span>, download<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1" aria-label="code-block-1-4"></a><span class="co"># dataset = EuroSAT(root="data/", download=True) # To use the full dataset</span></span></code></pre>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1" aria-label="code-block-1-3"></a>dataset <span class="op">=</span> EuroSAT100(</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1" aria-label="code-block-1-4"></a>    root<span class="op">=</span><span class="st">'data/'</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1" aria-label="code-block-1-5"></a>    split<span class="op">=</span><span class="st">'train'</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1" aria-label="code-block-1-6"></a>    download<span class="op">=</span><span class="va">True</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1" aria-label="code-block-1-7"></a>)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1" aria-label="code-block-1-8"></a><span class="co"># To use the full dataset replace EuroSAT100 with EuroSAT</span></span></code></pre>
 </div>
 <p>You can also sub-select only the RGB bands:</p>
 <div class="codewrapper sourceCode" id="cb2">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" tabindex="-1" aria-label="code-block-2-1"></a>dataset_rgb <span class="op">=</span> EuroSAT100(<span class="st">'data/'</span>, split<span class="op">=</span><span class="st">'train'</span>, download<span class="op">=</span><span class="va">True</span>, bands<span class="op">=</span>(<span class="st">'B04'</span>, <span class="st">'B03'</span>, <span class="st">'B02'</span>))</span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" tabindex="-1" aria-label="code-block-2-1"></a>dataset_rgb <span class="op">=</span> EuroSAT100(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1" aria-label="code-block-2-2"></a>    root<span class="op">=</span><span class="st">'data/'</span>, </span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1" aria-label="code-block-2-3"></a>    split<span class="op">=</span><span class="st">'train'</span>, </span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1" aria-label="code-block-2-4"></a>    download<span class="op">=</span><span class="va">True</span>, </span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1" aria-label="code-block-2-5"></a>    bands<span class="op">=</span>(<span class="st">'B04'</span>, <span class="st">'B03'</span>, <span class="st">'B02'</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1" aria-label="code-block-2-6"></a>)</span></code></pre>
+</div>
+<p>#TODO data scaling</p>
+<div id="augmentations" class="callout">
+<div class="callout-square">
+<i class="callout-icon" data-feather="bell"></i>
+</div>
+<span class="callout-header">Callout</span>
+<div id="augmentations" class="callout-inner">
+<h3 class="callout-title">Augmentations</h3>
+<div class="callout-content">
+<p>Augmentations let us virtually increase dataset size and help train
+more generalizable models. However this is only true when augmentations
+introduce variation that occurs naturally in the data.</p>
+<p>Hopkins et al. (2025) found that “augmentation techniques designed
+for natural images should not be applied to satellite imagery without
+careful consideration”. Their results suggest that standard
+natural-image techniques, particularly photometric augmentations, do not
+translate well to the satellite domain, while geometric operations
+remain broadly beneficial.</p>
+<ul>
+<li>Geometric transformations such as flipping and rotation tend to be
+safe (with exceptions), since overhead imagery rarely has an inherent
+“up” direction — unlike, say, a natural photo of a tree, which reads as
+wrong upside-down. Random crop or zoom need more care: because satellite
+imagery has a fixed, known ground sampling distance, arbitrary rescaling
+can distort the physical meaning of the pixels. Whether a specific
+geometric transformation is acceptable depends on the end task.</li>
+<li>From photometric transformations, adding noise is commonly used and
+can be beneficial.</li>
+<li>For temporal augmentations: dropping time-steps to mimic cloud
+occlusion, or masking out missing data modalities.</li>
+</ul>
+<p>You can implement augmentations as follows:</p>
+<div class="codewrapper sourceCode" id="cb3">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" tabindex="-1" aria-label="code-block-3-1"></a><span class="im">from</span> torchvision.transforms <span class="im">import</span> v2</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1" aria-label="code-block-3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1" aria-label="code-block-3-3"></a>transforms <span class="op">=</span> v2.Compose([</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1" aria-label="code-block-3-4"></a>    v2.RandomHorizontalFlip(p<span class="op">=</span><span class="fl">0.5</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1" aria-label="code-block-3-5"></a>    v2.RandomVerticalFlip(p<span class="op">=</span><span class="fl">0.5</span>),</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1" aria-label="code-block-3-6"></a>    v2.RandomRotation([<span class="dv">0</span>, <span class="dv">360</span>], interpolation<span class="op">=</span><span class="st">'bilinear'</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1" aria-label="code-block-3-7"></a>    v2.GaussianNoise(mean <span class="op">=</span> <span class="fl">0.0</span>, sigma <span class="op">=</span> <span class="fl">0.1</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1" aria-label="code-block-3-8"></a>    </span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1" aria-label="code-block-3-9"></a>])</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1" aria-label="code-block-3-10"></a></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1" aria-label="code-block-3-11"></a>batch <span class="op">=</span> <span class="bu">next</span>(dataloader)</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1" aria-label="code-block-3-12"></a>img <span class="op">=</span> batch[<span class="st">'image'</span>]</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1" aria-label="code-block-3-13"></a><span class="bu">print</span>(img.shape)</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1" aria-label="code-block-3-14"></a>out <span class="op">=</span> transforms(img)</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+<div id="adding-indices-in-torcggeo" class="callout">
+<div class="callout-square">
+<i class="callout-icon" data-feather="bell"></i>
+</div>
+<span class="callout-header">Callout</span>
+<div id="adding-indices-in-torcggeo" class="callout-inner">
+<h3 class="callout-title">Adding Indices in TorcgGeo</h3>
+<div class="callout-content">
+<p>You can append indices to any dataset as follows:</p>
+<div class="codewrapper sourceCode" id="cb4">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" tabindex="-1" aria-label="code-block-4-1"></a><span class="im">from</span> torchgeo.transforms <span class="im">import</span> AppendNDVI</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1" aria-label="code-block-4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1" aria-label="code-block-4-3"></a><span class="co"># Data shape before adding indices</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1" aria-label="code-block-4-4"></a>batch <span class="op">=</span> <span class="bu">next</span>(dataloader)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1" aria-label="code-block-4-5"></a>img <span class="op">=</span> batch[<span class="st">'image'</span>]</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1" aria-label="code-block-4-6"></a><span class="bu">print</span>(img.shape)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1" aria-label="code-block-4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1" aria-label="code-block-4-8"></a>transforms <span class="op">=</span> nn.Sequential(</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1" aria-label="code-block-4-9"></a>    MinMaxNormalize(mins, maxs),</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1" aria-label="code-block-4-10"></a>    indices.AppendNDVI(index_nir<span class="op">=</span><span class="dv">7</span>, index_red<span class="op">=</span><span class="dv">3</span>),</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1" aria-label="code-block-4-11"></a>)</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1" aria-label="code-block-4-12"></a></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1" aria-label="code-block-4-13"></a><span class="co"># Data shape after adding indices</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1" aria-label="code-block-4-14"></a>img <span class="op">=</span> transforms(img)</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1" aria-label="code-block-4-15"></a><span class="bu">print</span>(img.shape)</span></code></pre>
+</div>
+<p>You can find more indices <a href="https://docs.torchgeo.org/en/v0.2.0/api/transforms.html" class="external-link">here</a></p>
+</div>
+</div>
 </div>
 </section><section><h2 class="section-heading" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
