@@ -81,7 +81,6 @@ dimension, and satellite mission or instrument.
 :::::::::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::
 
-## Geospatial Data Integration for Deep Learning 
 ## Integration of Geospatial Data for DL Pipelines
 
 If you have tried to experiment with EO images in a standard computer vision pipeline, you have probably encountered several hurdles: the images had large file sizes and were not in an easy-to-open format (e.g. with PIL's `Image`), images themselves had unconventional dimensions: large width and height, too few channels (e.g. single-band Digital Elevation Model rasters) or too many channels relative to native RGB images,while the pixel values were not stored as standard 8-bit unsigned integers. Integrating multiple modalities could introduce an additional hiccup, since inputs may differ in spatial resolution, image size, and coordinate reference system. Further, at inference, you need to obtain predictions for entire or even multiple scenes producing one consolidated map. This requires obtaining predictions from overlapping tiles and singing them into georeferenced maps.
@@ -97,17 +96,12 @@ All the choices leading up to a DL-ready dataset introduce effects and uncertain
 
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
-## Dimensions
-
 In theory, each EO data point is a multi-dimensional image patch with $W \times H \times T \times C$ dimensions, where $W$ is the width, $H$ is the height, $T$ is the timestep, and $C$ is the number of spectral channels. We will walk through each dimension in turn.
 
 ### 1. Spatial dimension
-**Working with patches**: models are rarely trained on full scenes directly; scenes are cropped into 
-fixed-size patches for training, and patch size is itself a modeling choice: it trades off spatial context (larger patches capture more surrounding structure) against memory/compute cost and the number of training samples you can extract per scene.
-TODO: add size examples.
+**Working with patches**. Models are rarely trained on full scenes directly, as these scene images are too large to be passed through most neural networks. Therefore, scenes are cropped into fixed-size patches for training. Patch size is itself a modeling choice: it trades off spatial context (larger patches capture more surrounding structure) against memory/compute cost and the number of training samples you can extract per scene.
 
-**Inference over full scenes**: at inference time, the same patch size is typically re-applied via a sliding window over the full scene, with overlapping tiles to avoid edge artifacts; predictions are then merged (e.g. averaged in overlap regions) and written back out as a single georeferenced raster.
-
+**Inference over full scenes** at inference time: the same patch size is typically re-applied via a sliding window over the full scene, with overlapping tiles to avoid edge artifacts; predictions are then merged (e.g., averaged in overlap regions) and written back out as a single georeferenced raster.
 TODO: Further patching in ViT
 
 ### 2. Temporal dimension
@@ -116,8 +110,6 @@ There are several options on how to deal with the temporal dimension. Sialelli e
 - **Time-series / time-window**: treating EO data either as per-pixel time series, or as video-like sequences of images over a time window.
 - **Composites**: collapsing a time window into a single representative image, e.g. taking the per-pixel median to suppress clouds and transient noise.
 - **Single time-step**: treating the data as an instantaneous snapshot, ignoring temporal context entirely.
-
-
 
 ### 3. Spectral dimension
 
@@ -148,15 +140,44 @@ However, as discussed previously, using additional EO data can guide the model t
 
 An alternative is to preserve each modality at its native resolution and delegate alignment to the model architecture itself — avoiding information loss at the cost of greater architectural complexity. Typical designs use modality-specific encoder branches, each operating at its source's native resolution, with representations fused at a shared spatial scale via learned upsampling, cross-attention, or feature concatenation after a spatial-alignment layer.
 
-### Augmentations
+## TorchGeo: Custom and Curated Datasets
 
-Augmentations let us virtually increase dataset size and help train more generalizable models. However this is only true when augmentations introduce variation that occurs naturally in the data.
+TorchGeo is a modular, scalable Python framework for integrating geospatial data into DL workflows. It is built on top of PyTorch, extending it to handle spatio-temporal geospatial data. TorchGeo addresses the full pipeline and can be split into a data component and a modeling component. In this section, we focus on TorchGeo's dataset classes. The next section covers the modeling side.
 
-Hopkins et al. (2025) found that "augmentation techniques designed for natural images should not be applied to satellite imagery without careful consideration". Their results suggest that standard natural-image techniques, particularly photometric augmentations, do not translate well to the satellite domain, while geometric operations remain broadly beneficial.
+TorchGeo's dataset classes provide a solid starting point, giving access to already curated, established DL-ready datasets from the DL-for-EO community. At the same time, TorchGeo's dataset structure can serve as a template for packaging your own dataset for reuse and collaboration.
 
-- Geometric transformations such as flipping and rotation tend to be safe (with exceptions), since overhead imagery rarely has an inherent "up" direction — unlike, say, a natural photo of a tree, which reads as wrong upside-down. Random crop or zoom need more care: because satellite imagery has a fixed, known ground sampling distance, arbitrary rescaling can distort the physical meaning of the pixels. Whether a specific geometric transformation is acceptable depends on the end task.
-- From photometric transformations, adding noise is commonly used and can be beneficial.
-- For temporal augmentations: dropping time-steps to mimic cloud occlusion, or masking out missing data modalities.
+TorchGeo datasets bake in the sample pre-processing that implements the techniques discussed above, so the data arrives ready for DL training or evaluation pipelines.
+
+::::::::::::::::::::::::::::::::::::: callout
+
+### Curated datasets in TorchGeo
+The available curated datasets are listed [here](https://docs.torchgeo.org/en/stable/api/datasets.html).
+
+- These datasets are the product of individual or community efforts, and many serve as established benchmarks/baselines in the field.
+- They lower the barrier to entry for DL practitioners, who would otherwise face the non-trivial task of assembling training-ready inputs from raw or derived EO products themselves.
+- The trade-off is a loss of control: adopting an existing curated dataset means inheriting its creators' design choices, which may not match the requirements of your downstream task.
+::::::::::::::::::::::::::::::::::::::::::::::::
+
+In this episode, we will work with EuroSAT100, a subset of the EuroSAT dataset, which is an established image classification dataset. It is composed of multispectral images from the Sentinel-2 satellites and has 10 class labels (see figure bellow).
+
+![Example images for the 10 classes in the EuroSAT dataset from Helber et al. (2019)]([images/eurosat_Helber.png){alt='Collage of satellite images subdivided based on classes: Annual Crop, Forest, Herbaceous Vegetation, Highway, Industrial Buildings, Pasture, Permanent Crop, Residential Buildings, River, Sea & Lake.'}
+
+This dataset can be loaded from TorchGeo datasets:
+
+```python
+from torchgeo.datasets import EuroSAT100, EuroSAT
+
+dataset = EuroSAT100('data/', split='train', download=True)
+# dataset = EuroSAT(root="data/", download=True) # To use the full dataset
+
+```
+
+You can also sub-select only the RGB bands:
+
+```python
+dataset_rgb = EuroSAT100('data/', split='train', download=True, bands=('B04', 'B03', 'B02'))
+```
+
 
 
 ## References 
@@ -177,7 +198,6 @@ Hopkins et al. (2025) found that "augmentation techniques designed for natural i
 
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: instructor
-
 
 Notes for instructors
 
