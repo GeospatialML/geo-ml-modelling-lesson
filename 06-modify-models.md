@@ -67,9 +67,9 @@ While general DL techniques can be adopted directly for baseline tasks, unlockin
 ## Challenge 1: Name the key differences between natural and EO image data?
 
 
-![Images of ten different types of cats from ImageNet dataset. https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle]([https://raw.githubusercontent.com/carpentries/logo/master/Badge_Carpentries.svg](https://www.researchgate.net/publication/353539035/figure/fig1/AS:11431281349571973@1743735786398/Ten-different-types-of-cats-from-ImageNet.tif)){alt='Collage of pictures of cats and (potentially) racoons.'}
+![Images of ten different types of cats from ImageNet dataset. [Source](https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle)]([https://raw.githubusercontent.com/carpentries/logo/master/Badge_Carpentries.svg](https://www.researchgate.net/publication/353539035/figure/fig1/AS:11431281349571973@1743735786398/Ten-different-types-of-cats-from-ImageNet.tif)){alt='Collage of pictures of cats and (potentially) racoons.'}
 
-![**Satellite images of the same location (Rolf et al 2024)]([images/eo_modalities_Rolf.png)){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
+![Satellite images of the same location Source: Rolf et al., 2024]([images/eo_modalities_Rolf.png){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
 
 :::::::::::::::::::::::: solution
 
@@ -112,7 +112,7 @@ TODO: Further patching in ViT
 
 ### 2. Temporal dimension
 
-There are several options on how to deal with the temporal dimension. Sialelli et al (2026) summarised them as the following options:
+There are several options on how to deal with the temporal dimension. Sialelli et al. (2026) summarized them as the following options:
 - **Time-series / time-window**: treating EO data either as per-pixel time series, or as video-like sequences of images over a time window.
 - **Composites**: collapsing a time window into a single representative image, e.g. taking the per-pixel median to suppress clouds and transient noise.
 - **Single time-step**: treating the data as an instantaneous snapshot, ignoring temporal context entirely.
@@ -162,11 +162,11 @@ Hopkins et al. (2025) found that "augmentation techniques designed for natural i
 ## References 
 
 - Robinson & Corley (2026) https://geospatialml.com/posts/torchgeo-iclr-tutorial/
-- Sialelli et al (2026) https://ghjuliasialelli.github.io/ML-EO-Maps/data_selection.html
+- Sialelli et al. (2026) https://ghjuliasialelli.github.io/ML-EO-Maps/data_selection.html
 - GeoWGS84AI  https://www.geowgs84.ai/post/deep-learning-for-geospatial-analysis-best-practices-code-samples and https://www.geowgs84.ai/post/torchgeo-for-beginners-unlocking-ai-in-geospatial-applications
-- Hopkins et al (2025) https://ojs.aaai.org/index.php/AAAI/article/view/35028
+- Hopkins et al. (2025) https://ojs.aaai.org/index.php/AAAI/article/view/35028
 - Ioffe and Szegedy (2015) https://arxiv.org/abs/1502.03167
-- Rolf et al (2024) https://doi.org/10.48550/arXiv.2402.01444
+- Rolf et al. (2024) https://doi.org/10.48550/arXiv.2402.01444
 
 ::::::::::::::::::::::::::::::::::::: keypoints
 
