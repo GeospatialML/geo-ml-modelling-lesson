@@ -6,98 +6,179 @@ exercises: 2 # exercise time in minutes
 
 :::::::::::::::::::::::::::::::::::::: questions
 
-- What are deep learning models and encoders-decoders?
+- How may geospatial and Earth Observation data differ from natural images?
+- How do these changes potentially affect adoption of core Deep Learning techniques?
 - How to embed spatial and temporal context in deep learning models?
 
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
 ::::::::::::::::::::::::::::::::::::: objectives
 
-- Explain deep learning models and encoders-decoders
-- Apply space and time encoders for a given ML task
-- Use spatial attention in a deep learning model for a given ML task
-- Use cross-channel attention in a deep learning model
-- Include additional channels in a deep learning model
-- Discuss the challenges of different spatial resolutions of the input data and how to address them
-
+- Explain why geospatial and Earth Observation data when treated as simple images may not be able to achieve the best performance out of Deep Learning models due to differences in data characteristics.
+- Describe at least three strategies of injecting geospatial information into Deep Learning model performance.
+- Build a data loading pipeline that handles multi-band, multi-resolution EO rasters.
+- Compare trade-offs of each strategy in terms of performance vs data efficiency, compute cost, implementation complexity.
+- Modify standard convolution or transformer-based Deep Learning architectures to accept multispectral or auxiliary-variable inputs.
+- Judge for a given problem which strategy is the most appropriate.
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
 ## Introduction
 
-In this lesson, ....
+In this lesson, you will learn how the unique characteristics of geospatial, specifically Earth Observation (EO), data affect the adoption of core Deep Learning (DL) techniques.
 
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: instructor
+We begin by introducing what makes geospatial/EO data different and where those differences limit the direct applicability of standard DL approaches. From there, we focus on the practical realities of working with EO datasets for a given DL task. We then turn to concrete DL method adaptations for handling geospatial data: including pretrained models, extended input channels, and lightweight spatial attention.
 
-Inline instructor notes can help inform instructors of timing challenges
-associated with the lessons. They appear in the "Instructor View"
+We close by discussing the trade-offs between these approaches and how to judge which is the right fit for a given problem.
 
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+## Deep Learning with Geospatial Data
+
+
+Deep Learning (DL) is a powerful tool to process and extract meaningful information from large raw data at scale. It is widely used across domains to extract features, capture patterns, segment regions, detect objects, and comprehend sequences. When applied to geospatial data, specifically Earth Observation (EO) data, DL presents significant opportunities to automate the analysis and modeling of satellite and aerial imagery at scale.
+
+Common DL applications for geospatial data include:
+
+- Land use and land cover classification and change detection.
+- Deforestation, wild-fire detection and mapping.
+- Building footprint extraction and urban-sprawl monitoring.
+- Crop yield prediction and agricultural monitoring.
+- Disaster impact assessment.
+- Maritime surveillance (ship detection, oil spill tracking).
+- Many more.
+
+## Unique Characteristics of Geospatial Data in Deep Learning Domain
+
+However, most standard DL architectures are designed for common data modalities, such as natural photographs or language. Applying these out-of-the-box models to EO data can yield suboptimal results because EO data possesses unique characteristics that demand it be treated as a distinct modality (Rolf et al., 2024).  #TODO how to cite?
+
+These unique EO characteristics include:
+
+- **Varying Spatial Scales:** Target sizes span a logarithmic scale, from sub-meter (tree) to over a kilometer (field).
+- **Overhead Perspective:** Targets are captured from a top-down view, and lack a “natural” orientation, unlike natural images.
+- **Temporal Dynamics:** Temporal patterns also span a logarithmic scale, tracking changes from hours to decades.
+- **Spectral Depth:** Data is often multi- or hyperspectral, capturing wavelengths far beyond standard RGB.
+- **Radiometric Resolution:** Data is measured at a higher precision, frequently exceeding standard 8-bit depth.
+- **Non-Optical Modalities:** EO encompasses more than visual imagery: it integrates structural and active sensor data, such as Digital Elevation Models (DEM), LiDAR, and Synthetic Aperture Radar (SAR).
+- **Global Coverage:** Datasets inherently span the entire globe, introducing immense geographic and environmental diversity.
+
+While general DL techniques can be adopted directly for baseline tasks, unlocking their full performative capacity requires neural architectures tailored to the specific complexity of geospatial information. Applying DL to EO data is not just a data processing task; it is a unique integration challenge with no equivalents in conventional computer vision. To be truly effective, models must be designed to handle the heterogeneity, high dimensionality, and spatial autocorrelation inherent in remote sensing, GIS, and spatial analytics.
+
 
 ::::::::::::::::::::::::::::::::::::: challenge
 
-## Challenge 1: Can you do it?
-
-What is the output of this command?
-
-```python
-print("This", "new", "lesson", "looks", "good")
-```
-
-:::::::::::::::::::::::: solution
-
-## Output
-
-```output
-This new lesson looks good
-```
-
-:::::::::::::::::::::::::::::::::
+## Challenge 1: Name the key differences between natural and EO image data?
 
 
-## Challenge 2: how do you nest solutions within challenge blocks?
+![Images of ten different types of cats from ImageNet dataset. https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle]([https://raw.githubusercontent.com/carpentries/logo/master/Badge_Carpentries.svg](https://www.researchgate.net/publication/353539035/figure/fig1/AS:11431281349571973@1743735786398/Ten-different-types-of-cats-from-ImageNet.tif)){alt='Collage of pictures of cats and (potentially) racoons.'}
+
+![**Satellite images of the same location (Rolf et al 2024)]([images/eo_modalities_Rolf.png)){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
 
 :::::::::::::::::::::::: solution
 
-You can add a line with at least three colons and a `solution` tag.
+## Answer
+
+Natural images are object centric, with virtually identical semantics. While satellite images of the same location can vary widely and capture different semantic meanings. They depend on factors like spatial resolution and cropping extent, temporal
+dimension, and satellite mission or instrument.
 
 :::::::::::::::::::::::::::::::::
-::::::::::::::::::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::
 
-## Figures
+## Geospatial Data Integration for Deep Learning 
+## Integration of Geospatial Data for DL Pipelines
 
-You can use standard markdown for static figures with the following syntax:
+If you have tried to experiment with EO images in a standard computer vision pipeline, you have probably encountered several hurdles: the images had large file sizes and were not in an easy-to-open format (e.g. with PIL's `Image`), images themselves had unconventional dimensions: large width and height, too few channels (e.g. single-band Digital Elevation Model rasters) or too many channels relative to native RGB images,while the pixel values were not stored as standard 8-bit unsigned integers. Integrating multiple modalities could introduce an additional hiccup, since inputs may differ in spatial resolution, image size, and coordinate reference system. Further, at inference, you need to obtain predictions for entire or even multiple scenes producing one consolidated map. This requires obtaining predictions from overlapping tiles and singing them into georeferenced maps.
 
-`![optional caption that appears below the figure](figure url){alt='alt text for
-accessibility purposes'}`
+As highlighted in the previous section, these mismatches and implementation challenges stem from EO data having quite different characteristics from natural images, and thus require converting raw sensor measurements into DL analysis-ready data formats.
 
-![You belong in The Carpentries!](https://raw.githubusercontent.com/carpentries/logo/master/Badge_Carpentries.svg){alt='Blue Carpentries hex person logo with no text.'}
+This includes choices around projection and sampling strategy, scaling, choice of spectral bands and input modalities, and the (optional) alignment of the various data modalities. These choices should support workflows that stay robust to differing coordinate systems, resolutions, and sensor characteristics.
 
 ::::::::::::::::::::::::::::::::::::: callout
 
-Callout sections can highlight information.
-
-They are sometimes used to emphasise particularly important points
-but are also used in some lessons to present "asides":
-content that is not central to the narrative of the lesson,
-e.g. by providing the answer to a commonly-asked question.
+### Note
+All the choices leading up to a DL-ready dataset introduce effects and uncertainties that propagate through the entire modeling pipeline. These choices *can* be reversed, but at a cost. Therefore, these choices should be treated as part of the modeling pipeline and they should be well documented.
 
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
+## Dimensions
 
-## Math
+In theory, each EO data point is a multi-dimensional image patch with $W \times H \times T \times C$ dimensions, where $W$ is the width, $H$ is the height, $T$ is the timestep, and $C$ is the number of spectral channels. We will walk through each dimension in turn.
 
-One of our episodes contains $\LaTeX$ equations when describing how to create
-dynamic reports with {knitr}, so we now use mathjax to describe this:
+### 1. Spatial dimension
+**Working with patches**: models are rarely trained on full scenes directly; scenes are cropped into 
+fixed-size patches for training, and patch size is itself a modeling choice: it trades off spatial context (larger patches capture more surrounding structure) against memory/compute cost and the number of training samples you can extract per scene.
+TODO: add size examples.
 
-`$\alpha = \dfrac{1}{(1 - \beta)^2}$` becomes: $\alpha = \dfrac{1}{(1 - \beta)^2}$
+**Inference over full scenes**: at inference time, the same patch size is typically re-applied via a sliding window over the full scene, with overlapping tiles to avoid edge artifacts; predictions are then merged (e.g. averaged in overlap regions) and written back out as a single georeferenced raster.
 
-Cool, right?
+TODO: Further patching in ViT
+
+### 2. Temporal dimension
+
+There are several options on how to deal with the temporal dimension. Sialelli et al (2026) summarised them as the following options:
+- **Time-series / time-window**: treating EO data either as per-pixel time series, or as video-like sequences of images over a time window.
+- **Composites**: collapsing a time window into a single representative image, e.g. taking the per-pixel median to suppress clouds and transient noise.
+- **Single time-step**: treating the data as an instantaneous snapshot, ignoring temporal context entirely.
+
+
+
+### 3. Spectral dimension
+
+**Radiometric resolution**
+
+Radiometric pre-processing of raw data matters and should not be treated as an afterthought. Raw sensor digital numbers are typically scaled to a physical measurement (e.g. reflectance). Note the distinction between Top-of-Atmosphere and Bottom-of-Atmosphere reflectance products, as they are not interchangeable. For Sentinel-2, this typically means dividing digital numbers by 10,000 to recover reflectance values in [0, 1].
+
+DL pipelines sometimes substitute alternative divisors: normalizing to the training data's own distribution, or applying band-specific scaling factors. Alternatively, if you are building on top of pre-trained models, you may need to match the pretrained model's expected input distribution. 
+
+All this pre-processing also includes the dtype conversion. When reusing a pretrained RGB model, data sometimes needs to be converted to 8-bit unsigned integers (`uint8`) to match what that model was trained on.
+
+When in doubt on how to pre-process, scale or normalize pixel values: read the sensor/product documentation rather than assuming a standard scaling convention.
+
+::::::::::::::::::::::::::::::::::::: callout
+
+### Standardisation and normalisation
+Scaling inputs to roughly [-1, 1] generally aids training stability: large input values can push activations of functions such as sigmoid and tanh into their saturation regime, producing diminished gradients and slower convergence (Ioffe and Szegedy, 2015).
+
+::::::::::::::::::::::::::::::::::::::::::::::::
+
+**Spectral coverage**
+
+*Channel selection*: when using a pretrained RGB model, you may choose to keep only the 3 bands closest to that model's native RGB input, discarding or separately handling the rest.
+
+However, as discussed previously, using additional EO data can guide the model toward more accurate predictions. Rather than restricting yourself to 3 bands, you may opt to keep the full multispectral stack, or add channels beyond the sensor's native bands entirely.
+
+*Other modalities*: incorporating derived indices (e.g. NDVI) or entirely different modalities (DEM, SAR) alongside optical bands. When training patches combine data from multiple sensors, the inputs will generally differ in native projection, pixel spacing, and temporal sampling. The most common solution is to reproject and resample all modalities onto a shared grid and resolution before patch extraction, so each training sample is spatially aligned.
+
+An alternative is to preserve each modality at its native resolution and delegate alignment to the model architecture itself — avoiding information loss at the cost of greater architectural complexity. Typical designs use modality-specific encoder branches, each operating at its source's native resolution, with representations fused at a shared spatial scale via learned upsampling, cross-attention, or feature concatenation after a spatial-alignment layer.
+
+### Augmentations
+
+Augmentations let us virtually increase dataset size and help train more generalizable models. However this is only true when augmentations introduce variation that occurs naturally in the data.
+
+Hopkins et al. (2025) found that "augmentation techniques designed for natural images should not be applied to satellite imagery without careful consideration". Their results suggest that standard natural-image techniques, particularly photometric augmentations, do not translate well to the satellite domain, while geometric operations remain broadly beneficial.
+
+- Geometric transformations such as flipping and rotation tend to be safe (with exceptions), since overhead imagery rarely has an inherent "up" direction — unlike, say, a natural photo of a tree, which reads as wrong upside-down. Random crop or zoom need more care: because satellite imagery has a fixed, known ground sampling distance, arbitrary rescaling can distort the physical meaning of the pixels. Whether a specific geometric transformation is acceptable depends on the end task.
+- From photometric transformations, adding noise is commonly used and can be beneficial.
+- For temporal augmentations: dropping time-steps to mimic cloud occlusion, or masking out missing data modalities.
+
+
+## References 
+
+- Robinson & Corley (2026) https://geospatialml.com/posts/torchgeo-iclr-tutorial/
+- Sialelli et al (2026) https://ghjuliasialelli.github.io/ML-EO-Maps/data_selection.html
+- GeoWGS84AI  https://www.geowgs84.ai/post/deep-learning-for-geospatial-analysis-best-practices-code-samples and https://www.geowgs84.ai/post/torchgeo-for-beginners-unlocking-ai-in-geospatial-applications
+- Hopkins et al (2025) https://ojs.aaai.org/index.php/AAAI/article/view/35028
+- Ioffe and Szegedy (2015) https://arxiv.org/abs/1502.03167
+- Rolf et al (2024) https://doi.org/10.48550/arXiv.2402.01444
 
 ::::::::::::::::::::::::::::::::::::: keypoints
 
-- Use `.md` files for episodes when you want static content
-- Use `.Rmd` files for episodes when you need to generate output
-- Run `sandpaper::check_lesson()` to identify any issues with your lesson
-- Run `sandpaper::build_lesson()` to preview your lesson locally
+- tba
+- tba
 
 ::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: instructor
+
+
+Notes for instructors
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
