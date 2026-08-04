@@ -67,9 +67,9 @@ While general DL techniques can be adopted directly for baseline tasks, unlockin
 ## Challenge 1: Name the key differences between natural and EO image data?
 
 
-![Images of ten different types of cats from ImageNet dataset. [Source](https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle)]([https://raw.githubusercontent.com/carpentries/logo/master/Badge_Carpentries.svg](https://www.researchgate.net/publication/353539035/figure/fig1/AS:11431281349571973@1743735786398/Ten-different-types-of-cats-from-ImageNet.tif)){alt='Collage of pictures of cats and (potentially) racoons.'}
+![Images of ten different types of cats from ImageNet dataset. [Source](https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle)](https://www.researchgate.net/publication/353539035/figure/fig1/AS:11431281349571973@1743735786398/Ten-different-types-of-cats-from-ImageNet.tif){alt='Collage of pictures of cats and (potentially) racoons.'}
 
-![Satellite images of the same location Source: Rolf et al., 2024]([images/eo_modalities_Rolf.png){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
+![Satellite images of the same location Source: Rolf et al., 2024](./images/eo_modalities_Rolf.png){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
 
 :::::::::::::::::::::::: solution
 
@@ -160,7 +160,7 @@ The available curated datasets are listed [here](https://docs.torchgeo.org/en/st
 
 In this episode, we will work with EuroSAT100, a subset of the EuroSAT dataset, which is an established image classification dataset. It is composed of multispectral images from the Sentinel-2 satellites and has 10 class labels (see figure bellow).
 
-![Example images for the 10 classes in the EuroSAT dataset from Helber et al. (2019)]([images/eurosat_Helber.png){alt='Collage of satellite images subdivided based on classes: Annual Crop, Forest, Herbaceous Vegetation, Highway, Industrial Buildings, Pasture, Permanent Crop, Residential Buildings, River, Sea & Lake.'}
+![Example images for the 10 classes in the EuroSAT dataset from Helber et al. (2019)](images/eurosat_Helber.png){alt='Collage of satellite images subdivided based on classes: Annual Crop, Forest, Herbaceous Vegetation, Highway, Industrial Buildings, Pasture, Permanent Crop, Residential Buildings, River, Sea & Lake.'}
 
 This dataset can be loaded from TorchGeo datasets:
 
