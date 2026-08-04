@@ -255,8 +255,13 @@
     <div id="flush-collapsecurrent" class="accordion-collapse collapse show" data-bs-parent="#accordionFlushcurrent">
       <div class="accordion-body">
         <ul><li><a href="#introduction">Introduction</a></li>
-<li><a href="#figures">Figures</a></li>
-<li><a href="#math">Math</a></li>
+<li><a href="#deep-learning-with-geospatial-data">Deep Learning with Geospatial Data</a></li>
+<li><a href="#unique-characteristics-of-geospatial-data-in-deep-learning-domain">Unique Characteristics of Geospatial Data in Deep Learning
+Domain</a></li>
+<li><a href="#geospatial-data-integration-for-deep-learning">Geospatial Data Integration for Deep Learning</a></li>
+<li><a href="#integration-of-geospatial-data-for-dl-pipelines">Integration of Geospatial Data for DL Pipelines</a></li>
+<li><a href="#dimensions">Dimensions</a></li>
+<li><a href="#references">References</a></li>
         </ul></div><!--/div.accordion-body-->
     </div><!--/div.accordion-collapse-->
 
@@ -330,7 +335,7 @@
       </div>
     </nav><main id="main-content" class="main-content"><div class="container lesson-content">
         <h1>Modify standard DL models for geospatial data and spatial context</h1>
-        <p>Last updated on 2026-07-10 |
+        <p>Last updated on 2026-08-04 |
 
         <a href="https://geospatialml.github.io/geo-ml-modelling-lesson/edit/main/episodes/06-modify-models.md" class="external-link">Edit this page <i aria-hidden="true" data-feather="edit"></i></a></p>
 
@@ -349,7 +354,10 @@
 <div class="card-body">
 <div class="inner">
 <h3 class="card-title">Questions</h3>
-<ul><li>What are deep learning models and encoders-decoders?</li>
+<ul><li>How may geospatial and Earth Observation data differ from natural
+images?</li>
+<li>How do these changes potentially affect adoption of core Deep
+Learning techniques?</li>
 <li>How to embed spatial and temporal context in deep learning
 models?</li>
 </ul></div>
@@ -359,125 +367,313 @@ models?</li>
 <div class="card-body">
 <div class="inner bordered">
 <h3 class="card-title">Objectives</h3>
-<ul><li>Explain deep learning models and encoders-decoders</li>
-<li>Apply space and time encoders for a given ML task</li>
-<li>Use spatial attention in a deep learning model for a given ML
-task</li>
-<li>Use cross-channel attention in a deep learning model</li>
-<li>Include additional channels in a deep learning model</li>
-<li>Discuss the challenges of different spatial resolutions of the input
-data and how to address them</li>
+<ul><li>Explain why geospatial and Earth Observation data when treated as
+simple images may not be able to achieve the best performance out of
+Deep Learning models due to differences in data characteristics.</li>
+<li>Describe at least three strategies of injecting geospatial
+information into Deep Learning model performance.</li>
+<li>Build a data loading pipeline that handles multi-band,
+multi-resolution EO rasters.</li>
+<li>Compare trade-offs of each strategy in terms of performance vs data
+efficiency, compute cost, implementation complexity.</li>
+<li>Modify standard convolution or transformer-based Deep Learning
+architectures to accept multispectral or auxiliary-variable inputs.</li>
+<li>Judge for a given problem which strategy is the most
+appropriate.</li>
 </ul></div>
 </div>
 </div>
 </div>
 </div>
 <section><h2 class="section-heading" id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a></h2>
-<hr class="half-width"><p>In this lesson, ….</p>
-
-<div id="challenge-1-can-you-do-it" class="callout challenge">
+<hr class="half-width"><p>In this lesson, you will learn how the unique characteristics of
+geospatial, specifically Earth Observation (EO), data affect the
+adoption of core Deep Learning (DL) techniques.</p>
+<p>We begin by introducing what makes geospatial/EO data different and
+where those differences limit the direct applicability of standard DL
+approaches. From there, we focus on the practical realities of working
+with EO datasets for a given DL task. We then turn to concrete DL method
+adaptations for handling geospatial data: including pretrained models,
+extended input channels, and lightweight spatial attention.</p>
+<p>We close by discussing the trade-offs between these approaches and
+how to judge which is the right fit for a given problem.</p>
+</section><section><h2 class="section-heading" id="deep-learning-with-geospatial-data">Deep Learning with Geospatial Data<a class="anchor" aria-label="anchor" href="#deep-learning-with-geospatial-data"></a></h2>
+<hr class="half-width"><p>Deep Learning (DL) is a powerful tool to process and extract
+meaningful information from large raw data at scale. It is widely used
+across domains to extract features, capture patterns, segment regions,
+detect objects, and comprehend sequences. When applied to geospatial
+data, specifically Earth Observation (EO) data, DL presents significant
+opportunities to automate the analysis and modeling of satellite and
+aerial imagery at scale.</p>
+<p>Common DL applications for geospatial data include:</p>
+<ul><li>Land use and land cover classification and change detection.</li>
+<li>Deforestation, wild-fire detection and mapping.</li>
+<li>Building footprint extraction and urban-sprawl monitoring.</li>
+<li>Crop yield prediction and agricultural monitoring.</li>
+<li>Disaster impact assessment.</li>
+<li>Maritime surveillance (ship detection, oil spill tracking).</li>
+<li>Many more.</li>
+</ul></section><section><h2 class="section-heading" id="unique-characteristics-of-geospatial-data-in-deep-learning-domain">Unique Characteristics of Geospatial Data in Deep Learning
+Domain<a class="anchor" aria-label="anchor" href="#unique-characteristics-of-geospatial-data-in-deep-learning-domain"></a></h2>
+<hr class="half-width"><p>However, most standard DL architectures are designed for common data
+modalities, such as natural photographs or language. Applying these
+out-of-the-box models to EO data can yield suboptimal results because EO
+data possesses unique characteristics that demand it be treated as a
+distinct modality (Rolf et al., 2024). #TODO how to cite?</p>
+<p>These unique EO characteristics include:</p>
+<ul><li>
+<strong>Varying Spatial Scales:</strong> Target sizes span a
+logarithmic scale, from sub-meter (tree) to over a kilometer
+(field).</li>
+<li>
+<strong>Overhead Perspective:</strong> Targets are captured from a
+top-down view, and lack a “natural” orientation, unlike natural
+images.</li>
+<li>
+<strong>Temporal Dynamics:</strong> Temporal patterns also span a
+logarithmic scale, tracking changes from hours to decades.</li>
+<li>
+<strong>Spectral Depth:</strong> Data is often multi- or
+hyperspectral, capturing wavelengths far beyond standard RGB.</li>
+<li>
+<strong>Radiometric Resolution:</strong> Data is measured at a
+higher precision, frequently exceeding standard 8-bit depth.</li>
+<li>
+<strong>Non-Optical Modalities:</strong> EO encompasses more than
+visual imagery: it integrates structural and active sensor data, such as
+Digital Elevation Models (DEM), LiDAR, and Synthetic Aperture Radar
+(SAR).</li>
+<li>
+<strong>Global Coverage:</strong> Datasets inherently span the
+entire globe, introducing immense geographic and environmental
+diversity.</li>
+</ul><p>While general DL techniques can be adopted directly for baseline
+tasks, unlocking their full performative capacity requires neural
+architectures tailored to the specific complexity of geospatial
+information. Applying DL to EO data is not just a data processing task;
+it is a unique integration challenge with no equivalents in conventional
+computer vision. To be truly effective, models must be designed to
+handle the heterogeneity, high dimensionality, and spatial
+autocorrelation inherent in remote sensing, GIS, and spatial
+analytics.</p>
+<div id="challenge-1-name-the-key-differences-between-natural-and-eo-image-data" class="callout challenge">
 <div class="callout-square">
 <i class="callout-icon" data-feather="zap"></i>
 </div>
 <span class="callout-header">Challenge</span>
-<div id="challenge-1-can-you-do-it" class="callout-inner">
-<h3 class="callout-title">Challenge 1: Can you do it?</h3>
+<div id="challenge-1-name-the-key-differences-between-natural-and-eo-image-data" class="callout-inner">
+<h3 class="callout-title">Challenge 1: Name the key differences between
+natural and EO image data?</h3>
 <div class="callout-content">
-<p>What is the output of this command?</p>
-<div class="codewrapper sourceCode" id="cb1">
-<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
-</h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" tabindex="-1" aria-label="code-block-1-1"></a><span class="bu">print</span>(<span class="st">"This"</span>, <span class="st">"new"</span>, <span class="st">"lesson"</span>, <span class="st">"looks"</span>, <span class="st">"good"</span>)</span></code></pre>
+<figure><img src="%5Bhttps://raw.githubusercontent.com/carpentries/logo/master/Badge_Carpentries.svg%5D(https://www.researchgate.net/publication/353539035/figure/fig1/AS:11431281349571973@1743735786398/Ten-different-types-of-cats-from-ImageNet.tif)" alt="Collage of pictures of cats and (potentially) racoons." class="figure mx-auto d-block"><div class="figcaption">Images of ten different types of cats from
+ImageNet dataset. <a href="https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle" class="external-link uri">https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle</a>
 </div>
+</figure><p><img src="%5Bimages/eo_modalities_Rolf.png" alt="**Satellite images of the same location (Rolf et al 2024)" class="figure">){alt=‘Collage
+of satellite images and products, depicting varied spatial resolutions,
+temporal dimension, information content.’}</p>
 </div>
 </div>
 </div>
 <div id="accordionSolution1" class="accordion challenge-accordion accordion-flush">
 <div class="accordion-item">
 <button class="accordion-button solution-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSolution1" aria-expanded="false" aria-controls="collapseSolution1">
-  <h4 class="accordion-header" id="headingSolution1"> Output </h4>
+  <h4 class="accordion-header" id="headingSolution1"> Answer </h4>
 </button>
 <div id="collapseSolution1" class="accordion-collapse collapse" data-bs-parent="#accordionSolution1" aria-labelledby="headingSolution1">
 <div class="accordion-body">
-<div class="codewrapper">
-<h3 class="code-label">OUTPUT<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
-</h3>
-<pre class="output" tabindex="0"><code>This new lesson looks good</code></pre>
+<p>Natural images are object centric, with virtually identical
+semantics. While satellite images of the same location can vary widely
+and capture different semantic meanings. They depend on factors like
+spatial resolution and cropping extent, temporal dimension, and
+satellite mission or instrument.</p>
 </div>
 </div>
 </div>
 </div>
-</div>
-<div id="challenge-2-how-do-you-nest-solutions-within-challenge-blocks" class="callout challenge">
-<div class="callout-square">
-<i class="callout-icon" data-feather="zap"></i>
-</div>
-<span class="callout-header">Challenge</span>
-<div id="challenge-2-how-do-you-nest-solutions-within-challenge-blocks" class="callout-inner">
-<h3 class="callout-title">Challenge 2: how do you nest solutions within
-challenge blocks?</h3>
-<div class="callout-content">
-
-</div>
-</div>
-</div>
-<div id="accordionSolution2" class="accordion challenge-accordion accordion-flush">
-<div class="accordion-item">
-<button class="accordion-button solution-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSolution2" aria-expanded="false" aria-controls="collapseSolution2">
-  <h4 class="accordion-header" id="headingSolution2"> Show me the solution </h4>
-</button>
-<div id="collapseSolution2" class="accordion-collapse collapse" data-bs-parent="#accordionSolution2" aria-labelledby="headingSolution2">
-<div class="accordion-body">
-<p>You can add a line with at least three colons and a
-<code>solution</code> tag.</p>
-</div>
-</div>
-</div>
-</div>
-</section><section><h2 class="section-heading" id="figures">Figures<a class="anchor" aria-label="anchor" href="#figures"></a></h2>
-<hr class="half-width"><p>You can use standard markdown for static figures with the following
-syntax:</p>
-<p><code>![optional caption that appears below the figure](figure url){alt='alt text for accessibility purposes'}</code></p>
-<figure><img src="https://raw.githubusercontent.com/carpentries/logo/master/Badge_Carpentries.svg" alt="Blue Carpentries hex person logo with no text." class="figure mx-auto d-block"><div class="figcaption">You belong in The Carpentries!</div>
-</figure><div id="callout1" class="callout">
+</section><section><h2 class="section-heading" id="geospatial-data-integration-for-deep-learning">Geospatial Data Integration for Deep Learning<a class="anchor" aria-label="anchor" href="#geospatial-data-integration-for-deep-learning"></a></h2>
+<hr class="half-width"></section><section><h2 class="section-heading" id="integration-of-geospatial-data-for-dl-pipelines">Integration of Geospatial Data for DL Pipelines<a class="anchor" aria-label="anchor" href="#integration-of-geospatial-data-for-dl-pipelines"></a></h2>
+<hr class="half-width"><p>If you have tried to experiment with EO images in a standard computer
+vision pipeline, you have probably encountered several hurdles: the
+images had large file sizes and were not in an easy-to-open format
+(e.g. with PIL’s <code>Image</code>), images themselves had
+unconventional dimensions: large width and height, too few channels
+(e.g. single-band Digital Elevation Model rasters) or too many channels
+relative to native RGB images,while the pixel values were not stored as
+standard 8-bit unsigned integers. Integrating multiple modalities could
+introduce an additional hiccup, since inputs may differ in spatial
+resolution, image size, and coordinate reference system. Further, at
+inference, you need to obtain predictions for entire or even multiple
+scenes producing one consolidated map. This requires obtaining
+predictions from overlapping tiles and singing them into georeferenced
+maps.</p>
+<p>As highlighted in the previous section, these mismatches and
+implementation challenges stem from EO data having quite different
+characteristics from natural images, and thus require converting raw
+sensor measurements into DL analysis-ready data formats.</p>
+<p>This includes choices around projection and sampling strategy,
+scaling, choice of spectral bands and input modalities, and the
+(optional) alignment of the various data modalities. These choices
+should support workflows that stay robust to differing coordinate
+systems, resolutions, and sensor characteristics.</p>
+<div id="note" class="callout">
 <div class="callout-square">
 <i class="callout-icon" data-feather="bell"></i>
 </div>
 <span class="callout-header">Callout</span>
-<div class="callout-inner">
+<div id="note" class="callout-inner">
+<h3 class="callout-title">Note</h3>
 <div class="callout-content">
-<p>Callout sections can highlight information.</p>
-<p>They are sometimes used to emphasise particularly important points
-but are also used in some lessons to present “asides”: content that is
-not central to the narrative of the lesson, e.g. by providing the answer
-to a commonly-asked question.</p>
+<p>All the choices leading up to a DL-ready dataset introduce effects
+and uncertainties that propagate through the entire modeling pipeline.
+These choices <em>can</em> be reversed, but at a cost. Therefore, these
+choices should be treated as part of the modeling pipeline and they
+should be well documented.</p>
 </div>
 </div>
 </div>
-</section><section><h2 class="section-heading" id="math">Math<a class="anchor" aria-label="anchor" href="#math"></a></h2>
-<hr class="half-width"><p>One of our episodes contains <span class="math inline">\(\LaTeX\)</span> equations when describing how to
-create dynamic reports with {knitr}, so we now use mathjax to describe
-this:</p>
-<p><code>$\alpha = \dfrac{1}{(1 - \beta)^2}$</code> becomes: <span class="math inline">\(\alpha = \dfrac{1}{(1 - \beta)^2}\)</span></p>
-<p>Cool, right?</p>
-<div id="keypoints1" class="callout keypoints">
+</section><section><h2 class="section-heading" id="dimensions">Dimensions<a class="anchor" aria-label="anchor" href="#dimensions"></a></h2>
+<hr class="half-width"><p>In theory, each EO data point is a multi-dimensional image patch with
+<span class="math inline">\(W \times H \times T \times C\)</span>
+dimensions, where <span class="math inline">\(W\)</span> is the width,
+<span class="math inline">\(H\)</span> is the height, <span class="math inline">\(T\)</span> is the timestep, and <span class="math inline">\(C\)</span> is the number of spectral channels. We
+will walk through each dimension in turn.</p>
+<div class="section level3">
+<h3 id="spatial-dimension">1. Spatial dimension<a class="anchor" aria-label="anchor" href="#spatial-dimension"></a></h3>
+<p><strong>Working with patches</strong>: models are rarely trained on
+full scenes directly; scenes are cropped into fixed-size patches for
+training, and patch size is itself a modeling choice: it trades off
+spatial context (larger patches capture more surrounding structure)
+against memory/compute cost and the number of training samples you can
+extract per scene. TODO: add size examples.</p>
+<p><strong>Inference over full scenes</strong>: at inference time, the
+same patch size is typically re-applied via a sliding window over the
+full scene, with overlapping tiles to avoid edge artifacts; predictions
+are then merged (e.g. averaged in overlap regions) and written back out
+as a single georeferenced raster.</p>
+<p>TODO: Further patching in ViT</p>
+</div>
+<div class="section level3">
+<h3 id="temporal-dimension">2. Temporal dimension<a class="anchor" aria-label="anchor" href="#temporal-dimension"></a></h3>
+<p>There are several options on how to deal with the temporal dimension.
+Sialelli et al (2026) summarised them as the following options: -
+<strong>Time-series / time-window</strong>: treating EO data either as
+per-pixel time series, or as video-like sequences of images over a time
+window. - <strong>Composites</strong>: collapsing a time window into a
+single representative image, e.g. taking the per-pixel median to
+suppress clouds and transient noise. - <strong>Single
+time-step</strong>: treating the data as an instantaneous snapshot,
+ignoring temporal context entirely.</p>
+</div>
+<div class="section level3">
+<h3 id="spectral-dimension">3. Spectral dimension<a class="anchor" aria-label="anchor" href="#spectral-dimension"></a></h3>
+<p><strong>Radiometric resolution</strong></p>
+<p>Radiometric pre-processing of raw data matters and should not be
+treated as an afterthought. Raw sensor digital numbers are typically
+scaled to a physical measurement (e.g. reflectance). Note the
+distinction between Top-of-Atmosphere and Bottom-of-Atmosphere
+reflectance products, as they are not interchangeable. For Sentinel-2,
+this typically means dividing digital numbers by 10,000 to recover
+reflectance values in [0, 1].</p>
+<p>DL pipelines sometimes substitute alternative divisors: normalizing
+to the training data’s own distribution, or applying band-specific
+scaling factors. Alternatively, if you are building on top of
+pre-trained models, you may need to match the pretrained model’s
+expected input distribution.</p>
+<p>All this pre-processing also includes the dtype conversion. When
+reusing a pretrained RGB model, data sometimes needs to be converted to
+8-bit unsigned integers (<code>uint8</code>) to match what that model
+was trained on.</p>
+<p>When in doubt on how to pre-process, scale or normalize pixel values:
+read the sensor/product documentation rather than assuming a standard
+scaling convention.</p>
+<div id="standardisation-and-normalisation" class="callout">
+<div class="callout-square">
+<i class="callout-icon" data-feather="bell"></i>
+</div>
+<span class="callout-header">Callout</span>
+<div id="standardisation-and-normalisation" class="callout-inner">
+<h3 class="callout-title">Standardisation and normalisation</h3>
+<div class="callout-content">
+<p>Scaling inputs to roughly [-1, 1] generally aids training stability:
+large input values can push activations of functions such as sigmoid and
+tanh into their saturation regime, producing diminished gradients and
+slower convergence (Ioffe and Szegedy, 2015).</p>
+</div>
+</div>
+</div>
+<p><strong>Spectral coverage</strong></p>
+<p><em>Channel selection</em>: when using a pretrained RGB model, you
+may choose to keep only the 3 bands closest to that model’s native RGB
+input, discarding or separately handling the rest.</p>
+<p>However, as discussed previously, using additional EO data can guide
+the model toward more accurate predictions. Rather than restricting
+yourself to 3 bands, you may opt to keep the full multispectral stack,
+or add channels beyond the sensor’s native bands entirely.</p>
+<p><em>Other modalities</em>: incorporating derived indices (e.g. NDVI)
+or entirely different modalities (DEM, SAR) alongside optical bands.
+When training patches combine data from multiple sensors, the inputs
+will generally differ in native projection, pixel spacing, and temporal
+sampling. The most common solution is to reproject and resample all
+modalities onto a shared grid and resolution before patch extraction, so
+each training sample is spatially aligned.</p>
+<p>An alternative is to preserve each modality at its native resolution
+and delegate alignment to the model architecture itself — avoiding
+information loss at the cost of greater architectural complexity.
+Typical designs use modality-specific encoder branches, each operating
+at its source’s native resolution, with representations fused at a
+shared spatial scale via learned upsampling, cross-attention, or feature
+concatenation after a spatial-alignment layer.</p>
+</div>
+<div class="section level3">
+<h3 id="augmentations">Augmentations<a class="anchor" aria-label="anchor" href="#augmentations"></a></h3>
+<p>Augmentations let us virtually increase dataset size and help train
+more generalizable models. However this is only true when augmentations
+introduce variation that occurs naturally in the data.</p>
+<p>Hopkins et al. (2025) found that “augmentation techniques designed
+for natural images should not be applied to satellite imagery without
+careful consideration”. Their results suggest that standard
+natural-image techniques, particularly photometric augmentations, do not
+translate well to the satellite domain, while geometric operations
+remain broadly beneficial.</p>
+<ul><li>Geometric transformations such as flipping and rotation tend to be
+safe (with exceptions), since overhead imagery rarely has an inherent
+“up” direction — unlike, say, a natural photo of a tree, which reads as
+wrong upside-down. Random crop or zoom need more care: because satellite
+imagery has a fixed, known ground sampling distance, arbitrary rescaling
+can distort the physical meaning of the pixels. Whether a specific
+geometric transformation is acceptable depends on the end task.</li>
+<li>From photometric transformations, adding noise is commonly used and
+can be beneficial.</li>
+<li>For temporal augmentations: dropping time-steps to mimic cloud
+occlusion, or masking out missing data modalities.</li>
+</ul></div>
+</section><section><h2 class="section-heading" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+<hr class="half-width"><ul><li>Robinson &amp; Corley (2026) <a href="https://geospatialml.com/posts/torchgeo-iclr-tutorial/" class="external-link uri">https://geospatialml.com/posts/torchgeo-iclr-tutorial/</a>
+</li>
+<li>Sialelli et al (2026) <a href="https://ghjuliasialelli.github.io/ML-EO-Maps/data_selection.html" class="external-link uri">https://ghjuliasialelli.github.io/ML-EO-Maps/data_selection.html</a>
+</li>
+<li>GeoWGS84AI <a href="https://www.geowgs84.ai/post/deep-learning-for-geospatial-analysis-best-practices-code-samples" class="external-link uri">https://www.geowgs84.ai/post/deep-learning-for-geospatial-analysis-best-practices-code-samples</a>
+and <a href="https://www.geowgs84.ai/post/torchgeo-for-beginners-unlocking-ai-in-geospatial-applications" class="external-link uri">https://www.geowgs84.ai/post/torchgeo-for-beginners-unlocking-ai-in-geospatial-applications</a>
+</li>
+<li>Hopkins et al (2025) <a href="https://ojs.aaai.org/index.php/AAAI/article/view/35028" class="external-link uri">https://ojs.aaai.org/index.php/AAAI/article/view/35028</a>
+</li>
+<li>Ioffe and Szegedy (2015) <a href="https://arxiv.org/abs/1502.03167" class="external-link uri">https://arxiv.org/abs/1502.03167</a>
+</li>
+<li>Rolf et al (2024) <a href="https://doi.org/10.48550/arXiv.2402.01444" class="external-link uri">https://doi.org/10.48550/arXiv.2402.01444</a>
+</li>
+</ul><div id="keypoints1" class="callout keypoints">
 <div class="callout-square">
 <i class="callout-icon" data-feather="key"></i>
 </div>
 <span class="callout-header">Key Points</span>
 <div class="callout-inner">
 <div class="callout-content">
-<ul><li>Use <code>.md</code> files for episodes when you want static
-content</li>
-<li>Use <code>.Rmd</code> files for episodes when you need to generate
-output</li>
-<li>Run <code>sandpaper::check_lesson()</code> to identify any issues
-with your lesson</li>
-<li>Run <code>sandpaper::build_lesson()</code> to preview your lesson
-locally</li>
+<ul><li>tba</li>
+<li>tba</li>
 </ul></div>
 </div>
 </div>
+
 <!--
 Place links that you need to refer to multiple times across pages here. Delete
 any links that you are not going to use.
@@ -542,7 +738,7 @@ any links that you are not going to use.
   "url": "https://geo-ml-modelling-lesson.github.io/NA/06-modify-models.html",
   "identifier": "https://geo-ml-modelling-lesson.github.io/NA/06-modify-models.html",
   "dateCreated": "2026-07-10",
-  "dateModified": "2026-07-10",
+  "dateModified": "2026-08-04",
   "datePublished": "2026-08-04"
 }
 
