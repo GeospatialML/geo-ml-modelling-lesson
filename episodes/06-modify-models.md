@@ -79,6 +79,7 @@ Natural images are object centric, with virtually identical semantics. While sat
 dimension, and satellite mission or instrument.
 
 :::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::
 
 ## Geospatial Data Integration for Deep Learning 
 ## Integration of Geospatial Data for DL Pipelines
