@@ -167,16 +167,90 @@ This dataset can be loaded from TorchGeo datasets:
 ```python
 from torchgeo.datasets import EuroSAT100, EuroSAT
 
-dataset = EuroSAT100('data/', split='train', download=True)
-# dataset = EuroSAT(root="data/", download=True) # To use the full dataset
+dataset = EuroSAT100(
+    root='data/',
+    split='train',
+    download=True
+)
+# To use the full dataset replace EuroSAT100 with EuroSAT
 
 ```
 
 You can also sub-select only the RGB bands:
 
 ```python
-dataset_rgb = EuroSAT100('data/', split='train', download=True, bands=('B04', 'B03', 'B02'))
+dataset_rgb = EuroSAT100(
+    root='data/', 
+    split='train', 
+    download=True, 
+    bands=('B04', 'B03', 'B02')
+)
 ```
+
+#TODO data scaling
+
+::::::::::::::::::::::::::::::::::::: callout
+
+### Augmentations
+Augmentations let us virtually increase dataset size and help train more generalizable models. However this is only true when augmentations introduce variation that occurs naturally in the data.
+
+Hopkins et al. (2025) found that "augmentation techniques designed for natural images should not be applied to satellite imagery without careful consideration". Their results suggest that standard natural-image techniques, particularly photometric augmentations, do not translate well to the satellite domain, while geometric operations remain broadly beneficial.
+
+- Geometric transformations such as flipping and rotation tend to be safe (with exceptions), since overhead imagery rarely has an inherent "up" direction — unlike, say, a natural photo of a tree, which reads as wrong upside-down. Random crop or zoom need more care: because satellite imagery has a fixed, known ground sampling distance, arbitrary rescaling can distort the physical meaning of the pixels. Whether a specific geometric transformation is acceptable depends on the end task.
+- From photometric transformations, adding noise is commonly used and can be beneficial.
+- For temporal augmentations: dropping time-steps to mimic cloud occlusion, or masking out missing data modalities.
+
+You can implement augmentations as follows:
+
+```python
+from torchvision.transforms import v2
+
+transforms = v2.Compose([
+    v2.RandomHorizontalFlip(p=0.5),
+    v2.RandomVerticalFlip(p=0.5),
+    v2.RandomRotation([0, 360], interpolation='bilinear'),
+    v2.GaussianNoise(mean = 0.0, sigma = 0.1)
+    
+])
+
+batch = next(dataloader)
+img = batch['image']
+print(img.shape)
+out = transforms(img)
+```
+
+
+::::::::::::::::::::::::::::::::::::::::::::::::
+
+::::::::::::::::::::::::::::::::::::: callout
+
+### Adding Indices in TorcgGeo
+
+You can append indices to any dataset as follows:
+
+```python
+from torchgeo.transforms import AppendNDVI
+
+# Data shape before adding indices
+batch = next(dataloader)
+img = batch['image']
+print(img.shape)
+
+transforms = nn.Sequential(
+    MinMaxNormalize(mins, maxs),
+    indices.AppendNDVI(index_nir=7, index_red=3),
+)
+
+# Data shape after adding indices
+img = transforms(img)
+print(img.shape)
+```
+
+You can find more indices [here](https://docs.torchgeo.org/en/v0.2.0/api/transforms.html)
+
+
+::::::::::::::::::::::::::::::::::::::::::::::::
+
 
 
 
