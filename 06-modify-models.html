@@ -955,7 +955,12 @@ to TorchGeo’s own pretrained models in option 3.</p>
 <div class="section level3">
 <h3 id="a-generic-imagenet-pretrained-rgb-model">1. A generic ImageNet-pretrained RGB model<a class="anchor" aria-label="anchor" href="#a-generic-imagenet-pretrained-rgb-model"></a></h3>
 <p>The simplest starting point is a standard <code>torchvision</code>
-ResNet model pretrained on ImageNet:</p>
+ResNet model pretrained on ImageNet.</p>
+<p>ImageNet is a natural image classification dataset with 1000 target
+classes. Therefore, the final layer of Imagenet pretrained network has
+the output of 1000 classes. To use this model for EuroSAT, we need to
+replace the final fully-connected layer with one that outputs 10
+classes, then fine-tune it or the whole model.</p>
 <div class="codewrapper sourceCode" id="cb13">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
@@ -963,10 +968,11 @@ ResNet model pretrained on ImageNet:</p>
 <span id="cb13-2"><a href="#cb13-2" tabindex="-1" aria-label="code-block-13-2"></a><span class="im">from</span> torchvision.models <span class="im">import</span> resnet18, ResNet18_Weights</span>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1" aria-label="code-block-13-3"></a></span>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1" aria-label="code-block-13-4"></a>weights <span class="op">=</span> ResNet18_Weights.IMAGENET1K_V1</span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1" aria-label="code-block-13-5"></a>model <span class="op">=</span> resnet18(weights<span class="op">=</span>weights)</span></code></pre>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1" aria-label="code-block-13-5"></a>model <span class="op">=</span> resnet18(weights<span class="op">=</span>weights)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1" aria-label="code-block-13-6"></a>model.fc <span class="op">=</span> torch.nn.Linear(in_features<span class="op">=</span><span class="dv">512</span>, out_features<span class="op">=</span><span class="dv">10</span>, bias<span class="op">=</span><span class="va">True</span>)</span></code></pre>
 </div>
 <p>This model expects 3-channel RGB input, normalised to the statistics
-of the ImageNet training set (not to reflectance!):</p>
+of the ImageNet training set:</p>
 <div class="codewrapper sourceCode" id="cb14">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
@@ -1011,44 +1017,62 @@ its composition does.</p>
 <div class="accordion-body">
 <p>Input images are first <strong>resized</strong> so their shorter side
 is 256 px, then <strong>center-cropped</strong> to 224×224 px. The pixel
-values are then <strong>normalised</strong> per RGB channel using the
-given <code>mean</code> and <code>std</code>.</p>
-<div id="watch-out-this-resizes-up-not-down" class="callout">
+values are then <strong>normalised</strong> (re-centred and rescaled)
+per already-in-[0,1] RGB channel using the given <code>mean</code> and
+<code>std</code> derived to match the distribution of the ImageNet
+dataset that the model was trained on.</p>
+<div id="watch-out" class="callout">
 <div class="callout-square">
 <i class="callout-icon" data-feather="bell"></i>
 </div>
 <span class="callout-header">Callout</span>
-<div id="watch-out-this-resizes-up-not-down" class="callout-inner">
-<h3 class="callout-title">Watch out: this resizes <em>up</em>, not
-down</h3>
+<div id="watch-out" class="callout-inner">
+<h3 class="callout-title">Watch out:</h3>
 <div class="callout-content">
-<p>EuroSAT patches are only 64pcx by 64 px. Resizing to 256 px means
+<ol style="list-style-type: decimal"><li>EuroSAT patches are only 64 px by 64 px. Resizing to 256 px means
 <strong>upsampling</strong> a small patch by 4x via bilinear
 interpolation before cropping: it does not add real detail. For small,
 uniformly-sized EO patches like these, you may prefer to skip the
 resize/crop steps entirely and apply only the mean/std normalisation
-directly.</p>
-</div>
-</div>
-</div>
-<p>Recall that we earlier divided pixel values by <span class="math inline">\(10^4\)</span> to convert Sentinel-2 digital
+directly.</li>
+<li>Choosing the incorrect scaling or applying them in the wrong order,
+will silently degrade a pretrained model’s performance without raising
+an error.</li>
+</ol><p>Recall that we earlier divided pixel values by <span class="math inline">\(10^4\)</span> to convert Sentinel-2 digital
 numbers into <strong>physical reflectance</strong>, in the range [0, 1].
-That sensor-level correction always comes first, and is a different
-operation from ImageNet’s normalisation step.</p>
-<p>It is worth noting <em>why</em> a further normalisation step is
-needed at all: most land-surface reflectance values sit well below 1.0
-(often under 0.3–0.4, depending on band and surface type), so a
-reflectance image displayed or fed in directly looks very dark: the raw
-[0, 1] range is barely used. Z-scoring (subtracting a mean, dividing by
-a standard deviation) redistributes those values around 0, using the
-input range the network was actually designed and trained for, and
-matching the numeric scale on which pretrained weights operate.</p>
-<p><code>ResNet18_Weights.IMAGENET1K_V1</code>’s transform is a
-<em>second</em>, separate step: it re-centres and rescales
-already-in-[0,1] RGB data to match the distribution ImageNet was trained
-on. Skipping either step, or applying them in the wrong order, will
-silently degrade a pretrained model’s performance without raising an
-error.</p>
+However, most land-surface reflectance values sit well below 1.0 (often
+under 0.3–0.4, depending on band and surface type), so a reflectance
+image displayed or fed in directly looks very dark: the raw [0, 1] range
+is barely used. This may affect the performance of a pretrained model
+with a different distribution of the training dataset. Solution is the
+Z-scoring (subtracting a mean, dividing by a standard deviation), which
+redistributes values around 0, using the input range the network was
+actually designed and trained for, and matching the numeric scale on
+which pretrained weights operate.</p>
+</div>
+</div>
+</div>
+<p>You can obtain mean and std from the training split dataset for
+simplicity we will get the values as they are already available for
+eurosat</p>
+<div class="codewrapper sourceCode" id="cb17">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" tabindex="-1" aria-label="code-block-17-1"></a><span class="im">from</span> torchgeo.datamodules <span class="im">import</span> EuroSATDataModule</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1" aria-label="code-block-17-2"></a><span class="im">from</span> torchvision.transforms <span class="im">import</span> v2</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1" aria-label="code-block-17-3"></a></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1" aria-label="code-block-17-4"></a>dm <span class="op">=</span> EuroSATDataModule()</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1" aria-label="code-block-17-5"></a>reflectance_mean <span class="op">=</span> dm.mean <span class="op">/</span> <span class="fl">10000.0</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1" aria-label="code-block-17-6"></a>reflectance_std <span class="op">=</span> dm.std <span class="op">/</span> <span class="fl">10000.0</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1" aria-label="code-block-17-7"></a></span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1" aria-label="code-block-17-8"></a>zscore <span class="op">=</span> v2.Normalize(mean<span class="op">=</span>reflectance_mean.tolist(), std<span class="op">=</span>reflectance_std.tolist())</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1" aria-label="code-block-17-9"></a></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1" aria-label="code-block-17-10"></a><span class="co"># Final data preprocessing pipeline </span></span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1" aria-label="code-block-17-11"></a>zscore_preprocessing <span class="op">=</span> v2.Sequential(</span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1" aria-label="code-block-17-12"></a>    preprocessing,</span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1" aria-label="code-block-17-13"></a>    zscore</span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1" aria-label="code-block-17-14"></a>)</span></code></pre>
+</div>
 </div>
 </div>
 </div>
