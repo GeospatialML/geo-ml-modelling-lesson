@@ -300,7 +300,58 @@ You can find more indices [here](https://docs.torchgeo.org/en/v0.2.0/api/transfo
 
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
-Now let's create dataloaders for model training and evaluation. Note that validation and test datasets should not be shuffled, contain data augmentations (except for data preprocessing steps).
+To apply these transformations to the dataset, you need to specify them as `transforms` argument:
+
+```python
+train_dataset = EuroSAT100(
+    root='data/', 
+    split='train', 
+    download=True, 
+    transforms=v2.Compose([transforms, preprocess])
+    
+)
+
+val_dataset = EuroSAT100(
+    root='data/',
+    split='val',
+    download=True,
+    transforms=preprocess
+)
+
+test_dataset = EuroSAT100(
+    root='data/',
+    split='test',
+    download=True,
+    transforms=preprocess
+)
+```
+Note that validation and test datasets should not contain data augmentations (except for data preprocessing steps).
+
+::::::::::::::::::::::::::::::::::::: challenge
+
+## Challenge: Apply NDVI to a batch
+
+Using `add_ndvi` above, apply it to `dataset[0]['image']` and check how the channel dimension changed. Why did it change that way?
+
+:::::::::::::::::::::::: solution
+
+## Answer
+```python
+img = train_dataset[0]['image']
+print(f"Before: {img.shape}")
+img_with_ndvi = add_ndvi(img)
+print(f"After: {img_with_ndvi.shape}")
+```
+```output
+Before: torch.Size([13, 64, 64])
+After: torch.Size([1, 14, 64, 64])
+```
+
+NDVI is appended as one extra channel, so channel count goes from 13 → 14. There is an additional batch dimension, because transformations are optimised to work on batched data.
+:::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::::::::::::::::::::::
+
+Now let's create dataloaders for model training and evaluation. Note that validation and test datasets should not be shuffled.
 ```python
 from torch.utils.data import DataLoader
 
