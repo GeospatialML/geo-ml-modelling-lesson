@@ -375,7 +375,9 @@ Conveniently, pretrained models are the second thing TorchGeo helps with, alongs
 
 ### 1. A generic ImageNet-pretrained RGB model
 
-The simplest starting point is a standard `torchvision` ResNet model pretrained on ImageNet:
+The simplest starting point is a standard `torchvision` ResNet model pretrained on ImageNet. 
+
+ImageNet is a natural image classification dataset with 1000 target classes. Therefore, the final layer of Imagenet pretrained network has the output of 1000 classes. To use this model for EuroSAT, we need to replace the final fully-connected layer with one that outputs 10 classes, then fine-tune it or the whole model.
 
 ```python
 import torch
@@ -383,6 +385,7 @@ from torchvision.models import resnet18, ResNet18_Weights
 
 weights = ResNet18_Weights.IMAGENET1K_V1
 model = resnet18(weights=weights)
+model.fc = torch.nn.Linear(in_features=512, out_features=10, bias=True)
 ```
 
 This model expects 3-channel RGB input, normalised to the statistics of the ImageNet training set (not to reflectance!):
