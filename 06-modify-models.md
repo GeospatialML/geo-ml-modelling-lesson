@@ -242,10 +242,15 @@ Knowing that `dataset[0]` returns the first entry in the dataset, inspect minimu
 ## Answer
 
 ```python
-sample = dataset[0]['image']
+sample = train_dataset[0]['image']
 print(f"Before preprocessing: min={sample.min()}, max={sample.max()}")
 sample = preprocess(sample)
 print(f"After preprocessing: min={sample.min()}, max={sample.max()}")
+```
+
+```output
+Before preprocessing: min=629.0, max=3211.0
+After preprocessing: min=0.063, max=0.321
 ```
 :::::::::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::
@@ -253,7 +258,7 @@ print(f"After preprocessing: min={sample.min()}, max={sample.max()}")
 ::::::::::::::::::::::::::::::::::::: callout
 
 ### Augmentations
-Augmentations let us virtually increase dataset size and help train more generalizable models. However this is only true when augmentations introduce variation that occurs naturally in the data.
+Augmentations let us virtually increase dataset size and help train more generalizable models. However, this is only true when augmentations introduce variation that occurs naturally in the data.
 
 Hopkins et al. (2025) found that "augmentation techniques designed for natural images should not be applied to satellite imagery without careful consideration". Their results suggest that standard natural-image techniques, particularly photometric augmentations, do not translate well to the satellite domain, while geometric operations remain broadly beneficial.
 
