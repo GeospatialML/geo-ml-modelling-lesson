@@ -55,7 +55,7 @@ Common DL applications for geospatial data include:
 
 ## Unique Characteristics of Geospatial Data in Deep Learning Domain
 
-However, most standard DL architectures are designed for common data modalities, such as natural photographs or language. Applying these out-of-the-box models to EO data can yield suboptimal results because EO data possesses unique characteristics that demand it be treated as a distinct modality (Rolf et al., 2024).  #TODO how to cite?
+However, most standard DL architectures are designed for common data modalities, such as natural photographs or language. Applying these out-of-the-box models to EO data can yield suboptimal results because EO data possesses unique characteristics that demand it be treated as a distinct modality [(Rolf et al., 2024)](https://doi.org/10.48550/arXiv.2402.01444).
 
 These unique EO characteristics include:
 
@@ -72,12 +72,12 @@ While general DL techniques can be adopted directly for baseline tasks, unlockin
 
 ::::::::::::::::::::::::::::::::::::: challenge
 
-## Challenge 1: Name the key differences between natural and EO image data?
+## Challenge: Name the key differences between natural and EO image data?
 
 
 ![Images of ten different types of cats from ImageNet dataset. [Source](https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle)](https://www.mdpi.com/applsci/applsci-11-06963/article_deploy/html/images/applsci-11-06963-g001.png){alt='Collage of pictures of cats and (potentially) racoons.'}
 
-![Satellite images of the same location Source: Rolf et al., 2024](https://github.com/GeospatialML/geo-ml-modelling-lesson/blob/main/episodes/images/eo_modalities_Rolf.png?raw=true){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
+![Satellite images of the same location [Source: Rolf et al., 2024](https://doi.org/10.48550/arXiv.2402.01444)](https://github.com/GeospatialML/geo-ml-modelling-lesson/blob/main/episodes/images/eo_modalities_Rolf.png?raw=true){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
 
 :::::::::::::::::::::::: solution
 
@@ -115,6 +115,7 @@ TODO: Further patching in ViT
 ### 2. Temporal dimension
 
 There are several options on how to deal with the temporal dimension. Sialelli et al. (2026) summarized them as the following options:
+
 - **Time-series / time-window**: treating EO data either as per-pixel time series, or as video-like sequences of images over a time window.
 - **Composites**: collapsing a time window into a single representative image, e.g. taking the per-pixel median to suppress clouds and transient noise.
 - **Single time-step**: treating the data as an instantaneous snapshot, ignoring temporal context entirely.
@@ -175,7 +176,7 @@ This dataset can be loaded from TorchGeo datasets:
 ```python
 from torchgeo.datasets import EuroSAT100, EuroSAT
 
-dataset = EuroSAT100(
+train_dataset = EuroSAT100(
     root='data/',
     split='train',
     download=True
@@ -184,10 +185,37 @@ dataset = EuroSAT100(
 
 ```
 
+::::::::::::::::::::::::::::::::::::: challenge
+
+## Challenge: Create validation and test dataset
+
+Following the example above create `val_dataset` and `test_dataset` dataset objects.
+
+:::::::::::::::::::::::: solution
+
+## Answer
+
+```python
+
+val_dataset = EuroSAT100(
+    root='data/',
+    split='val',
+    download=True
+)
+
+test_dataset = EuroSAT100(
+    root='data/',
+    split='test',
+    download=True
+)
+```
+:::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::
+
 You can also sub-select only the RGB bands:
 
 ```python
-dataset_rgb = EuroSAT100(
+train_dataset_rgb = EuroSAT100(
     root='data/', 
     split='train', 
     download=True, 
@@ -195,7 +223,32 @@ dataset_rgb = EuroSAT100(
 )
 ```
 
-#TODO data scaling
+The images in the dataset are in the original Sentinel-2 scaling. Therefore, we need to rescale the dataset back to reflectance range of $[0, 1]$ by dividing by $10^4$.
+
+```python
+from torchvision.transforms import v2
+
+preprocess = v2.Normalize(mean=[0.0], std=[10000.0])
+```
+
+::::::::::::::::::::::::::::::::::::: challenge
+
+## Challenge: Inspect pixel value ranges
+
+Knowing that `dataset[0]` returns the first entry in the dataset, inspect minimum and maximum values before and after applying `preprocess(dataset[0]['image'])`
+
+:::::::::::::::::::::::: solution
+
+## Answer
+
+```python
+sample = dataset[0]['image']
+print(f"Before preprocessing: min={sample.min()}, max={sample.max()}")
+sample = preprocess(sample)
+print(f"After preprocessing: min={sample.min()}, max={sample.max()}")
+```
+:::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::
 
 ::::::::::::::::::::::::::::::::::::: callout
 
@@ -211,58 +264,69 @@ Hopkins et al. (2025) found that "augmentation techniques designed for natural i
 You can implement augmentations as follows:
 
 ```python
+
 from torchvision.transforms import v2
+from torchvision.transforms import InterpolationMode
 
 transforms = v2.Compose([
     v2.RandomHorizontalFlip(p=0.5),
     v2.RandomVerticalFlip(p=0.5),
-    v2.RandomRotation([0, 360], interpolation='bilinear'),
+    v2.RandomRotation([0, 360], interpolation=InterpolationMode.BILINEAR),
     v2.GaussianNoise(mean = 0.0, sigma = 0.1)
     
 ])
-
-batch = next(dataloader)
-img = batch['image']
-print(img.shape)
-out = transforms(img)
 ```
-
-
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
 ::::::::::::::::::::::::::::::::::::: callout
 
-### Adding Indices in TorcgGeo
+### Adding Indices in TorchGeo
 
 You can append indices to any dataset as follows:
 
 ```python
 from torchgeo.transforms import AppendNDVI
 
-# Data shape before adding indices
-batch = next(dataloader)
-img = batch['image']
-print(img.shape)
+add_ndvi =  AppendNDVI(index_nir=7, index_red=3) # it can be stacked with other transformations/augmentations
 
-transforms = nn.Sequential(
-    MinMaxNormalize(mins, maxs),
-    indices.AppendNDVI(index_nir=7, index_red=3),
-)
-
-# Data shape after adding indices
-img = transforms(img)
-print(img.shape)
 ```
 
 You can find more indices [here](https://docs.torchgeo.org/en/v0.2.0/api/transforms.html)
 
-
 ::::::::::::::::::::::::::::::::::::::::::::::::
+
+Now let's create dataloaders for model training and evaluation. Note that validation and test datasets should not be shuffled, contain data augmentations (except for data preprocessing steps).
+```python
+from torch.utils.data import DataLoader
+
+train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True, transforms=v2.Compose([transforms, preprocess]))
+val_dataloader = DataLoader(val_dataset, batch_size=128, shuffle=False, transforms=preprocess)
+test_dataloader = DataLoader(test_dataset, batch_size=128, shuffle=False, transforms=preprocess)
+
+```
+
+# 
+
+
+
+::::::::::::::::::::::::::::::::::::: challenge
+
+## Challenge 
+
+:::::::::::::::::::::::: solution
+
+## Answer
+
+
+:::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::
 
 
 
 
 ## References 
+
+There is much more about [torchgeo](https://pytorch.org/blog/geospatial-deep-learning-with-torchgeo/) for working with geo-spatial data.
 
 - Robinson & Corley (2026) https://geospatialml.com/posts/torchgeo-iclr-tutorial/
 - Sialelli et al. (2026) https://ghjuliasialelli.github.io/ML-EO-Maps/data_selection.html
