@@ -17,7 +17,7 @@ exercises: 2 # exercise time in minutes
 
 - Explain why geospatial and Earth Observation data when treated as simple images may not be able to achieve the best performance out of Deep Learning models due to differences in data characteristics.
 - Describe at least three strategies of injecting geospatial information into Deep Learning model performance.
-- Build a data loading pipeline that handles multi-band, multi-resolution EO rasters.
+- Build a data loading pipeline that handles multi-band, TODO:multi-resolution EO rasters.
 - Compare trade-offs of each strategy in terms of performance vs data efficiency, compute cost, implementation complexity.
 - Modify standard convolution or transformer-based Deep Learning architectures to accept multispectral or auxiliary-variable inputs.
 - Judge for a given problem which strategy is the most appropriate.
@@ -77,7 +77,7 @@ While general DL techniques can be adopted directly for baseline tasks, unlockin
 
 ![Images of ten different types of cats from ImageNet dataset. [Source](https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle)](https://www.mdpi.com/applsci/applsci-11-06963/article_deploy/html/images/applsci-11-06963-g001.png){alt='Collage of pictures of cats and (potentially) racoons.'}
 
-![Satellite images of the same location [Source: Rolf et al., 2024](https://doi.org/10.48550/arXiv.2402.01444)](https://github.com/GeospatialML/geo-ml-modelling-lesson/blob/main/episodes/images/eo_modalities_Rolf.png?raw=true){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
+![EO images of the same location [Source: Rolf et al., 2024](https://doi.org/10.48550/arXiv.2402.01444)](https://github.com/GeospatialML/geo-ml-modelling-lesson/blob/main/episodes/images/eo_modalities_Rolf.png?raw=true){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
 
 :::::::::::::::::::::::: solution
 
@@ -359,7 +359,80 @@ test_dataloader = DataLoader(test_dataset, batch_size=128, shuffle=False)
 
 ```
 
-# 
+# Model training
+
+We have created the dataloaders necessary for model training. Let's use them.
+
+So far we have treated data preparation as the main obstacle to applying DL to EO data. But the model itself is also a design choice, and one with a high influence on overall model performance. Today, it is common practice to use pretrained models, since in most (though not all!) cases they yield better performance than training from scratch.
+
+We will compare three options, from least to most EO-aware:
+
+1. A generic ImageNet-pretrained RGB model.
+2. The same model, modified to accept extra channels (e.g. NIR).
+3. A model pretrained directly on multispectral Sentinel-2 imagery.
+
+Conveniently, pretrained models are the second thing TorchGeo helps with, alongside the curated datasets we have already used.  We will get to TorchGeo's own pretrained models in option 3.
+
+### 1. A generic ImageNet-pretrained RGB model
+
+The simplest starting point is a standard `torchvision` ResNet model pretrained on ImageNet:
+
+```python
+import torch
+from torchvision.models import resnet18, ResNet18_Weights
+
+weights = ResNet18_Weights.IMAGENET1K_V1
+model = resnet18(weights=weights)
+```
+
+This model expects 3-channel RGB input, normalised to the statistics of the ImageNet training set (not to reflectance!):
+
+```python
+imagenet_transforms = weights.transforms()
+```
+
+::::::::::::::::::::::::::::::::::::: challenge
+
+## Challenge: Inspect ImageNet's native transform
+
+Print `imagenet_transforms` and explain what each step in its composition does.
+
+```python
+print(imagenet_transforms)
+```
+
+```output
+ImageClassification(
+    crop_size=[224]
+    resize_size=[256]
+    mean=[0.485, 0.456, 0.406]
+    std=[0.229, 0.224, 0.225]
+    interpolation=InterpolationMode.BILINEAR
+)
+```
+
+:::::::::::::::::::::::: solution
+
+## Answer
+Input images are first **resized** so their shorter side is 256 px, then **center-cropped** to 224×224 px. The pixel values are then **normalised** per RGB channel using the given `mean` and `std`.
+
+::::::::::::::::::::::::::::::::::::: callout
+
+### Watch out: this resizes *up*, not down
+EuroSAT patches are only 64pcx by 64 px. Resizing to 256 px means **upsampling** a small patch by 4x via bilinear interpolation before cropping: it does not add real detail. For small, uniformly-sized EO patches like these, you may prefer to skip the resize/crop steps entirely and apply only the mean/std normalisation directly.
+
+::::::::::::::::::::::::::::::::::::::::::::::::
+
+Recall that we earlier divided pixel values by $10^4$ to convert Sentinel-2 digital numbers into **physical reflectance**, in the range [0, 1]. That sensor-level correction always comes first, and is a different operation from ImageNet's normalisation step.
+
+It is worth noting *why* a further normalisation step is needed at all: most land-surface reflectance values sit well below 1.0 (often under 0.3–0.4, depending on band and surface type), so a reflectance image displayed or fed in directly looks very dark: the raw [0, 1] range is barely used. Z-scoring (subtracting a mean, dividing by a standard deviation) redistributes those values around 0, using the input range the network was actually designed and trained for, and matching the numeric scale on which pretrained weights operate.
+
+`ResNet18_Weights.IMAGENET1K_V1`'s transform is a *second*, separate step: it re-centres and rescales already-in-[0,1] RGB data to match the distribution ImageNet was trained on. Skipping either step, or applying them in the wrong order, will silently degrade a pretrained model's performance without raising an error.
+
+:::::::::::::::::::::::::::::::::
+:::::::::::::::::::::::::::::::::
+
+
 
 
 
