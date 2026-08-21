@@ -355,9 +355,9 @@ Now let's create dataloaders for model training and evaluation. Note that valida
 ```python
 from torch.utils.data import DataLoader
 
-train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True, transforms=v2.Compose([transforms, preprocess]))
-val_dataloader = DataLoader(val_dataset, batch_size=128, shuffle=False, transforms=preprocess)
-test_dataloader = DataLoader(test_dataset, batch_size=128, shuffle=False, transforms=preprocess)
+train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True)
+val_dataloader = DataLoader(val_dataset, batch_size=128, shuffle=False)
+test_dataloader = DataLoader(test_dataset, batch_size=128, shuffle=False)
 
 ```
 
