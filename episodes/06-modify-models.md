@@ -4,6 +4,9 @@ teaching: 10 # teaching time in minutes
 exercises: 2 # exercise time in minutes
 ---
 
+## Note
+It is highly recommended that you pre-view episodes in light-mode.
+
 :::::::::::::::::::::::::::::::::::::: questions
 
 - How may geospatial and Earth Observation data differ from natural images?
@@ -67,7 +70,7 @@ While general DL techniques can be adopted directly for baseline tasks, unlockin
 ## Challenge 1: Name the key differences between natural and EO image data?
 
 
-![Images of ten different types of cats from ImageNet dataset.](https://www.researchgate.net/publication/353539035/figure/fig1/AS:11431281349571973@1743735786398/Ten-different-types-of-cats-from-ImageNet.tif){alt='Collage of pictures of cats and (potentially) racoons.'}
+![Images of ten different types of cats from ImageNet dataset. [Source](https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle)](https://www.mdpi.com/applsci/applsci-11-06963/article_deploy/html/images/applsci-11-06963-g001.pnghttps://www.mdpi.com/applsci/applsci-11-06963/article_deploy/html/images/applsci-11-06963-g001.png){alt='Collage of pictures of cats and (potentially) racoons.'}
 
 ![Satellite images of the same location Source: Rolf et al., 2024](https://github.com/GeospatialML/geo-ml-modelling-lesson/blob/main/episodes/images/eo_modalities_Rolf.png?raw=true){alt='Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content.'}
 
