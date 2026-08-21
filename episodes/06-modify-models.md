@@ -255,7 +255,6 @@ After preprocessing: min=0.063, max=0.321
 :::::::::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::
 
-::::::::::::::::::::::::::::::::::::: callout
 
 ### Augmentations
 Augmentations let us virtually increase dataset size and help train more generalizable models. However, this is only true when augmentations introduce variation that occurs naturally in the data.
