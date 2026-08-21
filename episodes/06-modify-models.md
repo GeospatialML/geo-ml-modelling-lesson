@@ -388,7 +388,7 @@ model = resnet18(weights=weights)
 model.fc = torch.nn.Linear(in_features=512, out_features=10, bias=True)
 ```
 
-This model expects 3-channel RGB input, normalised to the statistics of the ImageNet training set (not to reflectance!):
+This model expects 3-channel RGB input, normalised to the statistics of the ImageNet training set:
 
 ```python
 imagenet_transforms = weights.transforms()
@@ -417,20 +417,44 @@ ImageClassification(
 :::::::::::::::::::::::: solution
 
 ## Answer
-Input images are first **resized** so their shorter side is 256 px, then **center-cropped** to 224×224 px. The pixel values are then **normalised** per RGB channel using the given `mean` and `std`.
+
+Input images are first **resized** so their shorter side is 256 px, then **center-cropped** to 224×224 px. The pixel values are then **normalised** (re-centred and rescaled) per already-in-[0,1] RGB channel using the given `mean` and `std` derived to match the distribution of the ImageNet dataset that the model was trained on.
+
 
 ::::::::::::::::::::::::::::::::::::: callout
 
-### Watch out: this resizes *up*, not down
-EuroSAT patches are only 64pcx by 64 px. Resizing to 256 px means **upsampling** a small patch by 4x via bilinear interpolation before cropping: it does not add real detail. For small, uniformly-sized EO patches like these, you may prefer to skip the resize/crop steps entirely and apply only the mean/std normalisation directly.
+### Watch out:
+
+1. EuroSAT patches are only 64 px by 64 px. Resizing to 256 px means **upsampling** a small patch by 4x via bilinear interpolation before cropping: it does not add real detail. For small, uniformly-sized EO patches like these, you may prefer to skip the resize/crop steps entirely and apply only the mean/std normalisation directly.
+2. Choosing the incorrect scaling or applying them in the wrong order, will silently degrade a pretrained model's performance without raising an error.
+
+
+
+Recall that we earlier divided pixel values by $10^4$ to convert Sentinel-2 digital numbers into **physical reflectance**, in the range [0, 1]. However, most land-surface reflectance values sit well below 1.0 (often under 0.3–0.4, depending on band and surface type), so a reflectance image displayed or fed in directly looks very dark: the raw [0, 1] range is barely used. This may affect the performance of a pretrained model with a different distribution of the training dataset. Solution is the Z-scoring (subtracting a mean, dividing by a standard deviation), which redistributes values around 0, using the input range the network was actually designed and trained for, and matching the numeric scale on which pretrained weights operate.
 
 ::::::::::::::::::::::::::::::::::::::::::::::::
 
-Recall that we earlier divided pixel values by $10^4$ to convert Sentinel-2 digital numbers into **physical reflectance**, in the range [0, 1]. That sensor-level correction always comes first, and is a different operation from ImageNet's normalisation step.
+You can obtain mean and std from the training split dataset for simplicity we will get the values as they are already available for eurosat
 
-It is worth noting *why* a further normalisation step is needed at all: most land-surface reflectance values sit well below 1.0 (often under 0.3–0.4, depending on band and surface type), so a reflectance image displayed or fed in directly looks very dark: the raw [0, 1] range is barely used. Z-scoring (subtracting a mean, dividing by a standard deviation) redistributes those values around 0, using the input range the network was actually designed and trained for, and matching the numeric scale on which pretrained weights operate.
+```python
+from torchgeo.datamodules import EuroSATDataModule
+from torchvision.transforms import v2
 
-`ResNet18_Weights.IMAGENET1K_V1`'s transform is a *second*, separate step: it re-centres and rescales already-in-[0,1] RGB data to match the distribution ImageNet was trained on. Skipping either step, or applying them in the wrong order, will silently degrade a pretrained model's performance without raising an error.
+dm = EuroSATDataModule()
+reflectance_mean = dm.mean / 10000.0
+reflectance_std = dm.std / 10000.0
+
+zscore = v2.Normalize(mean=reflectance_mean.tolist(), std=reflectance_std.tolist())
+
+# Final data preprocessing pipeline 
+zscore_preprocessing = v2.Sequential(
+    preprocessing,
+    zscore
+)
+
+```
+
+
 
 :::::::::::::::::::::::::::::::::
 :::::::::::::::::::::::::::::::::
