@@ -260,7 +260,6 @@
 Domain</a></li>
 <li><a href="#integration-of-geospatial-data-for-dl-pipelines">Integration of Geospatial Data for DL Pipelines</a></li>
 <li><a href="#torchgeo-custom-and-curated-datasets">TorchGeo: Custom and Curated Datasets</a></li>
-<li><a href="#references">References</a></li>
         </ul></div><!--/div.accordion-body-->
     </div><!--/div.accordion-collapse-->
 
@@ -433,7 +432,8 @@ Domain<a class="anchor" aria-label="anchor" href="#unique-characteristics-of-geo
 modalities, such as natural photographs or language. Applying these
 out-of-the-box models to EO data can yield suboptimal results because EO
 data possesses unique characteristics that demand it be treated as a
-distinct modality (Rolf et al., 2024). #TODO how to cite?</p>
+distinct modality <a href="https://doi.org/10.48550/arXiv.2402.01444" class="external-link">(Rolf et al.,
+2024)</a>.</p>
 <p>These unique EO characteristics include:</p>
 <ul><li>
 <strong>Varying Spatial Scales:</strong> Target sizes span a
@@ -470,20 +470,21 @@ computer vision. To be truly effective, models must be designed to
 handle the heterogeneity, high dimensionality, and spatial
 autocorrelation inherent in remote sensing, GIS, and spatial
 analytics.</p>
-<div id="challenge-1-name-the-key-differences-between-natural-and-eo-image-data" class="callout challenge">
+<div id="challenge-name-the-key-differences-between-natural-and-eo-image-data" class="callout challenge">
 <div class="callout-square">
 <i class="callout-icon" data-feather="zap"></i>
 </div>
 <span class="callout-header">Challenge</span>
-<div id="challenge-1-name-the-key-differences-between-natural-and-eo-image-data" class="callout-inner">
-<h3 class="callout-title">Challenge 1: Name the key differences between
+<div id="challenge-name-the-key-differences-between-natural-and-eo-image-data" class="callout-inner">
+<h3 class="callout-title">Challenge: Name the key differences between
 natural and EO image data?</h3>
 <div class="callout-content">
 <figure><img src="https://www.mdpi.com/applsci/applsci-11-06963/article_deploy/html/images/applsci-11-06963-g001.png" alt="Collage of pictures of cats and (potentially) racoons." class="figure mx-auto d-block"><div class="figcaption">Images of ten different types of cats from
 ImageNet dataset. <a href="https://doi.org/10.3390/app11156963?urlappend=%3Futm_source%3Dresearchgate.net%26utm_medium%3Darticle" class="external-link">Source</a>
 </div>
-</figure><figure><img src="https://github.com/GeospatialML/geo-ml-modelling-lesson/blob/main/episodes/images/eo_modalities_Rolf.png?raw=true" alt="Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content." class="figure mx-auto d-block"><div class="figcaption">Satellite images of the same location Source:
-Rolf et al., 2024</div>
+</figure><figure><img src="https://github.com/GeospatialML/geo-ml-modelling-lesson/blob/main/episodes/images/eo_modalities_Rolf.png?raw=true" alt="Collage of satellite images and products, depicting varied spatial resolutions, temporal dimension, information content." class="figure mx-auto d-block"><div class="figcaption">Satellite images of the same location <a href="https://doi.org/10.48550/arXiv.2402.01444" class="external-link">Source: Rolf et al.,
+2024</a>
+</div>
 </figure></div>
 </div>
 </div>
@@ -492,7 +493,7 @@ Rolf et al., 2024</div>
 <button class="accordion-button solution-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSolution1" aria-expanded="false" aria-controls="collapseSolution1">
   <h4 class="accordion-header" id="headingSolution1"> Answer </h4>
 </button>
-<div id="collapseSolution1" class="accordion-collapse collapse" aria-labelledby="headingSolution1" data-bs-parent="#accordionSolution1">
+<div id="collapseSolution1" class="accordion-collapse collapse" data-bs-parent="#accordionSolution1" aria-labelledby="headingSolution1">
 <div class="accordion-body">
 <p>Natural images are object centric, with virtually identical
 semantics. While satellite images of the same location can vary widely
@@ -566,15 +567,19 @@ as a single georeferenced raster. TODO: Further patching in ViT</p>
 <div class="section level3">
 <h3 id="temporal-dimension">2. Temporal dimension<a class="anchor" aria-label="anchor" href="#temporal-dimension"></a></h3>
 <p>There are several options on how to deal with the temporal dimension.
-Sialelli et al. (2026) summarized them as the following options: -
-<strong>Time-series / time-window</strong>: treating EO data either as
-per-pixel time series, or as video-like sequences of images over a time
-window. - <strong>Composites</strong>: collapsing a time window into a
-single representative image, e.g. taking the per-pixel median to
-suppress clouds and transient noise. - <strong>Single
-time-step</strong>: treating the data as an instantaneous snapshot,
-ignoring temporal context entirely.</p>
-</div>
+Sialelli et al. (2026) summarized them as the following options:</p>
+<ul><li>
+<strong>Time-series / time-window</strong>: treating EO data either
+as per-pixel time series, or as video-like sequences of images over a
+time window.</li>
+<li>
+<strong>Composites</strong>: collapsing a time window into a single
+representative image, e.g. taking the per-pixel median to suppress
+clouds and transient noise.</li>
+<li>
+<strong>Single time-step</strong>: treating the data as an
+instantaneous snapshot, ignoring temporal context entirely.</li>
+</ul></div>
 <div class="section level3">
 <h3 id="spectral-dimension">3. Spectral dimension<a class="anchor" aria-label="anchor" href="#spectral-dimension"></a></h3>
 <p><strong>Radiometric resolution</strong></p>
@@ -682,25 +687,108 @@ dataset from Helber et al. (2019)</div>
 </h3>
 <pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" tabindex="-1" aria-label="code-block-1-1"></a><span class="im">from</span> torchgeo.datasets <span class="im">import</span> EuroSAT100, EuroSAT</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1" aria-label="code-block-1-2"></a></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1" aria-label="code-block-1-3"></a>dataset <span class="op">=</span> EuroSAT100(</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1" aria-label="code-block-1-3"></a>train_dataset <span class="op">=</span> EuroSAT100(</span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1" aria-label="code-block-1-4"></a>    root<span class="op">=</span><span class="st">'data/'</span>,</span>
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1" aria-label="code-block-1-5"></a>    split<span class="op">=</span><span class="st">'train'</span>,</span>
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1" aria-label="code-block-1-6"></a>    download<span class="op">=</span><span class="va">True</span></span>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1" aria-label="code-block-1-7"></a>)</span>
 <span id="cb1-8"><a href="#cb1-8" tabindex="-1" aria-label="code-block-1-8"></a><span class="co"># To use the full dataset replace EuroSAT100 with EuroSAT</span></span></code></pre>
 </div>
-<p>You can also sub-select only the RGB bands:</p>
+<div id="challenge-create-validation-and-test-dataset" class="callout challenge">
+<div class="callout-square">
+<i class="callout-icon" data-feather="zap"></i>
+</div>
+<span class="callout-header">Challenge</span>
+<div id="challenge-create-validation-and-test-dataset" class="callout-inner">
+<h3 class="callout-title">Challenge: Create validation and test
+dataset</h3>
+<div class="callout-content">
+<p>Following the example above create <code>val_dataset</code> and
+<code>test_dataset</code> dataset objects.</p>
+</div>
+</div>
+</div>
+<div id="accordionSolution2" class="accordion challenge-accordion accordion-flush">
+<div class="accordion-item">
+<button class="accordion-button solution-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSolution2" aria-expanded="false" aria-controls="collapseSolution2">
+  <h4 class="accordion-header" id="headingSolution2"> Answer </h4>
+</button>
+<div id="collapseSolution2" class="accordion-collapse collapse" data-bs-parent="#accordionSolution2" aria-labelledby="headingSolution2">
+<div class="accordion-body">
 <div class="codewrapper sourceCode" id="cb2">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" tabindex="-1" aria-label="code-block-2-1"></a>dataset_rgb <span class="op">=</span> EuroSAT100(</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1" aria-label="code-block-2-2"></a>    root<span class="op">=</span><span class="st">'data/'</span>, </span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1" aria-label="code-block-2-3"></a>    split<span class="op">=</span><span class="st">'train'</span>, </span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1" aria-label="code-block-2-4"></a>    download<span class="op">=</span><span class="va">True</span>, </span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1" aria-label="code-block-2-5"></a>    bands<span class="op">=</span>(<span class="st">'B04'</span>, <span class="st">'B03'</span>, <span class="st">'B02'</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1" aria-label="code-block-2-6"></a>)</span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" tabindex="-1" aria-label="code-block-2-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1" aria-label="code-block-2-2"></a>val_dataset <span class="op">=</span> EuroSAT100(</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1" aria-label="code-block-2-3"></a>    root<span class="op">=</span><span class="st">'data/'</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1" aria-label="code-block-2-4"></a>    split<span class="op">=</span><span class="st">'val'</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1" aria-label="code-block-2-5"></a>    download<span class="op">=</span><span class="va">True</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1" aria-label="code-block-2-6"></a>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1" aria-label="code-block-2-7"></a></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1" aria-label="code-block-2-8"></a>test_dataset <span class="op">=</span> EuroSAT100(</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1" aria-label="code-block-2-9"></a>    root<span class="op">=</span><span class="st">'data/'</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1" aria-label="code-block-2-10"></a>    split<span class="op">=</span><span class="st">'test'</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1" aria-label="code-block-2-11"></a>    download<span class="op">=</span><span class="va">True</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1" aria-label="code-block-2-12"></a>)</span></code></pre>
 </div>
-<p>#TODO data scaling</p>
+</div>
+</div>
+</div>
+</div>
+<p>You can also sub-select only the RGB bands:</p>
+<div class="codewrapper sourceCode" id="cb3">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" tabindex="-1" aria-label="code-block-3-1"></a>train_dataset_rgb <span class="op">=</span> EuroSAT100(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1" aria-label="code-block-3-2"></a>    root<span class="op">=</span><span class="st">'data/'</span>, </span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1" aria-label="code-block-3-3"></a>    split<span class="op">=</span><span class="st">'train'</span>, </span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1" aria-label="code-block-3-4"></a>    download<span class="op">=</span><span class="va">True</span>, </span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1" aria-label="code-block-3-5"></a>    bands<span class="op">=</span>(<span class="st">'B04'</span>, <span class="st">'B03'</span>, <span class="st">'B02'</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1" aria-label="code-block-3-6"></a>)</span></code></pre>
+</div>
+<p>The images in the dataset are in the original Sentinel-2 scaling.
+Therefore, we need to rescale the dataset back to reflectance range of
+<span class="math inline">\([0, 1]\)</span> by dividing by <span class="math inline">\(10^4\)</span>.</p>
+<div class="codewrapper sourceCode" id="cb4">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" tabindex="-1" aria-label="code-block-4-1"></a><span class="im">from</span> torchvision.transforms <span class="im">import</span> v2</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1" aria-label="code-block-4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1" aria-label="code-block-4-3"></a>preprocess <span class="op">=</span> v2.Normalize(mean<span class="op">=</span>[<span class="fl">0.0</span>], std<span class="op">=</span>[<span class="fl">10000.0</span>])</span></code></pre>
+</div>
+<div id="challenge-inspect-pixel-value-ranges" class="callout challenge">
+<div class="callout-square">
+<i class="callout-icon" data-feather="zap"></i>
+</div>
+<span class="callout-header">Challenge</span>
+<div id="challenge-inspect-pixel-value-ranges" class="callout-inner">
+<h3 class="callout-title">Challenge: Inspect pixel value ranges</h3>
+<div class="callout-content">
+<p>Knowing that <code>dataset[0]</code> returns the first entry in the
+dataset, inspect minimum and maximum values before and after applying
+<code>preprocess(dataset[0]['image'])</code></p>
+</div>
+</div>
+</div>
+<div id="accordionSolution3" class="accordion challenge-accordion accordion-flush">
+<div class="accordion-item">
+<button class="accordion-button solution-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSolution3" aria-expanded="false" aria-controls="collapseSolution3">
+  <h4 class="accordion-header" id="headingSolution3"> Answer </h4>
+</button>
+<div id="collapseSolution3" class="accordion-collapse collapse" data-bs-parent="#accordionSolution3" aria-labelledby="headingSolution3">
+<div class="accordion-body">
+<div class="codewrapper sourceCode" id="cb5">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" tabindex="-1" aria-label="code-block-5-1"></a>sample <span class="op">=</span> dataset[<span class="dv">0</span>][<span class="st">'image'</span>]</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1" aria-label="code-block-5-2"></a><span class="bu">print</span>(<span class="ss">f"Before preprocessing: min=</span><span class="sc">{</span>sample<span class="sc">.</span><span class="bu">min</span>()<span class="sc">}</span><span class="ss">, max=</span><span class="sc">{</span>sample<span class="sc">.</span><span class="bu">max</span>()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1" aria-label="code-block-5-3"></a>sample <span class="op">=</span> preprocess(sample)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1" aria-label="code-block-5-4"></a><span class="bu">print</span>(<span class="ss">f"After preprocessing: min=</span><span class="sc">{</span>sample<span class="sc">.</span><span class="bu">min</span>()<span class="sc">}</span><span class="ss">, max=</span><span class="sc">{</span>sample<span class="sc">.</span><span class="bu">max</span>()<span class="sc">}</span><span class="ss">"</span>)</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div id="augmentations" class="callout">
 <div class="callout-square">
 <i class="callout-icon" data-feather="bell"></i>
@@ -730,61 +818,87 @@ can be beneficial.</li>
 <li>For temporal augmentations: dropping time-steps to mimic cloud
 occlusion, or masking out missing data modalities.</li>
 </ul><p>You can implement augmentations as follows:</p>
-<div class="codewrapper sourceCode" id="cb3">
+<div class="codewrapper sourceCode" id="cb6">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" tabindex="-1" aria-label="code-block-3-1"></a><span class="im">from</span> torchvision.transforms <span class="im">import</span> v2</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1" aria-label="code-block-3-2"></a></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1" aria-label="code-block-3-3"></a>transforms <span class="op">=</span> v2.Compose([</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1" aria-label="code-block-3-4"></a>    v2.RandomHorizontalFlip(p<span class="op">=</span><span class="fl">0.5</span>),</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1" aria-label="code-block-3-5"></a>    v2.RandomVerticalFlip(p<span class="op">=</span><span class="fl">0.5</span>),</span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1" aria-label="code-block-3-6"></a>    v2.RandomRotation([<span class="dv">0</span>, <span class="dv">360</span>], interpolation<span class="op">=</span><span class="st">'bilinear'</span>),</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1" aria-label="code-block-3-7"></a>    v2.GaussianNoise(mean <span class="op">=</span> <span class="fl">0.0</span>, sigma <span class="op">=</span> <span class="fl">0.1</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1" aria-label="code-block-3-8"></a>    </span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1" aria-label="code-block-3-9"></a>])</span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1" aria-label="code-block-3-10"></a></span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1" aria-label="code-block-3-11"></a>batch <span class="op">=</span> <span class="bu">next</span>(dataloader)</span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1" aria-label="code-block-3-12"></a>img <span class="op">=</span> batch[<span class="st">'image'</span>]</span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1" aria-label="code-block-3-13"></a><span class="bu">print</span>(img.shape)</span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1" aria-label="code-block-3-14"></a>out <span class="op">=</span> transforms(img)</span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" tabindex="-1" aria-label="code-block-6-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1" aria-label="code-block-6-2"></a><span class="im">from</span> torchvision.transforms <span class="im">import</span> v2</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1" aria-label="code-block-6-3"></a><span class="im">from</span> torchvision.transforms <span class="im">import</span> InterpolationMode</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1" aria-label="code-block-6-4"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1" aria-label="code-block-6-5"></a>transforms <span class="op">=</span> v2.Compose([</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1" aria-label="code-block-6-6"></a>    v2.RandomHorizontalFlip(p<span class="op">=</span><span class="fl">0.5</span>),</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1" aria-label="code-block-6-7"></a>    v2.RandomVerticalFlip(p<span class="op">=</span><span class="fl">0.5</span>),</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1" aria-label="code-block-6-8"></a>    v2.RandomRotation([<span class="dv">0</span>, <span class="dv">360</span>], interpolation<span class="op">=</span>InterpolationMode.BILINEAR),</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1" aria-label="code-block-6-9"></a>    v2.GaussianNoise(mean <span class="op">=</span> <span class="fl">0.0</span>, sigma <span class="op">=</span> <span class="fl">0.1</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1" aria-label="code-block-6-10"></a>    </span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1" aria-label="code-block-6-11"></a>])</span></code></pre>
 </div>
 </div>
 </div>
 </div>
-<div id="adding-indices-in-torcggeo" class="callout">
+<div id="adding-indices-in-torchgeo" class="callout">
 <div class="callout-square">
 <i class="callout-icon" data-feather="bell"></i>
 </div>
 <span class="callout-header">Callout</span>
-<div id="adding-indices-in-torcggeo" class="callout-inner">
-<h3 class="callout-title">Adding Indices in TorcgGeo</h3>
+<div id="adding-indices-in-torchgeo" class="callout-inner">
+<h3 class="callout-title">Adding Indices in TorchGeo</h3>
 <div class="callout-content">
 <p>You can append indices to any dataset as follows:</p>
-<div class="codewrapper sourceCode" id="cb4">
+<div class="codewrapper sourceCode" id="cb7">
 <h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
 </h3>
-<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" tabindex="-1" aria-label="code-block-4-1"></a><span class="im">from</span> torchgeo.transforms <span class="im">import</span> AppendNDVI</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1" aria-label="code-block-4-2"></a></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1" aria-label="code-block-4-3"></a><span class="co"># Data shape before adding indices</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1" aria-label="code-block-4-4"></a>batch <span class="op">=</span> <span class="bu">next</span>(dataloader)</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1" aria-label="code-block-4-5"></a>img <span class="op">=</span> batch[<span class="st">'image'</span>]</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1" aria-label="code-block-4-6"></a><span class="bu">print</span>(img.shape)</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1" aria-label="code-block-4-7"></a></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1" aria-label="code-block-4-8"></a>transforms <span class="op">=</span> nn.Sequential(</span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1" aria-label="code-block-4-9"></a>    MinMaxNormalize(mins, maxs),</span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1" aria-label="code-block-4-10"></a>    indices.AppendNDVI(index_nir<span class="op">=</span><span class="dv">7</span>, index_red<span class="op">=</span><span class="dv">3</span>),</span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1" aria-label="code-block-4-11"></a>)</span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1" aria-label="code-block-4-12"></a></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1" aria-label="code-block-4-13"></a><span class="co"># Data shape after adding indices</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1" aria-label="code-block-4-14"></a>img <span class="op">=</span> transforms(img)</span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1" aria-label="code-block-4-15"></a><span class="bu">print</span>(img.shape)</span></code></pre>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" tabindex="-1" aria-label="code-block-7-1"></a><span class="im">from</span> torchgeo.transforms <span class="im">import</span> AppendNDVI</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1" aria-label="code-block-7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1" aria-label="code-block-7-3"></a>add_ndvi <span class="op">=</span>  AppendNDVI(index_nir<span class="op">=</span><span class="dv">7</span>, index_red<span class="op">=</span><span class="dv">3</span>) <span class="co"># it can be stacked with other transformations/augmentations</span></span></code></pre>
 </div>
 <p>You can find more indices <a href="https://docs.torchgeo.org/en/v0.2.0/api/transforms.html" class="external-link">here</a></p>
 </div>
 </div>
 </div>
-</section><section><h2 class="section-heading" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-<hr class="half-width"><ul><li>Robinson &amp; Corley (2026) <a href="https://geospatialml.com/posts/torchgeo-iclr-tutorial/" class="external-link uri">https://geospatialml.com/posts/torchgeo-iclr-tutorial/</a>
+<p>Now let’s create dataloaders for model training and evaluation. Note
+that validation and test datasets should not be shuffled, contain data
+augmentations (except for data preprocessing steps).</p>
+<div class="codewrapper sourceCode" id="cb8">
+<h3 class="code-label">PYTHON<i aria-hidden="true" data-feather="chevron-left"></i><i aria-hidden="true" data-feather="chevron-right"></i>
+</h3>
+<pre class="sourceCode python" tabindex="0"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" tabindex="-1" aria-label="code-block-8-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1" aria-label="code-block-8-2"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1" aria-label="code-block-8-3"></a>train_dataloader <span class="op">=</span> DataLoader(train_dataset, batch_size<span class="op">=</span><span class="dv">128</span>, shuffle<span class="op">=</span><span class="va">True</span>, transforms<span class="op">=</span>v2.Compose([transforms, preprocess]))</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1" aria-label="code-block-8-4"></a>val_dataloader <span class="op">=</span> DataLoader(val_dataset, batch_size<span class="op">=</span><span class="dv">128</span>, shuffle<span class="op">=</span><span class="va">False</span>, transforms<span class="op">=</span>preprocess)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1" aria-label="code-block-8-5"></a>test_dataloader <span class="op">=</span> DataLoader(test_dataset, batch_size<span class="op">=</span><span class="dv">128</span>, shuffle<span class="op">=</span><span class="va">False</span>, transforms<span class="op">=</span>preprocess)</span></code></pre>
+</div>
+</section><div class="section level1">
+<h1 id="section"></h1>
+<div id="challenge" class="callout challenge">
+<div class="callout-square">
+<i class="callout-icon" data-feather="zap"></i>
+</div>
+<span class="callout-header">Challenge</span>
+<div id="challenge" class="callout-inner">
+<h3 class="callout-title">Challenge</h3>
+<div class="callout-content">
+
+</div>
+</div>
+</div>
+<div id="accordionSolution4" class="accordion challenge-accordion accordion-flush">
+<div class="accordion-item">
+<button class="accordion-button solution-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSolution4" aria-expanded="false" aria-controls="collapseSolution4">
+  <h4 class="accordion-header" id="headingSolution4"> Answer </h4>
+</button>
+<div id="collapseSolution4" class="accordion-collapse collapse" data-bs-parent="#accordionSolution4" aria-labelledby="headingSolution4">
+<div class="accordion-body">
+
+</div>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+<p>There is much more about <a href="https://pytorch.org/blog/geospatial-deep-learning-with-torchgeo/" class="external-link">torchgeo</a>
+for working with geo-spatial data.</p>
+<ul><li>Robinson &amp; Corley (2026) <a href="https://geospatialml.com/posts/torchgeo-iclr-tutorial/" class="external-link uri">https://geospatialml.com/posts/torchgeo-iclr-tutorial/</a>
 </li>
 <li>Sialelli et al. (2026) <a href="https://ghjuliasialelli.github.io/ML-EO-Maps/data_selection.html" class="external-link uri">https://ghjuliasialelli.github.io/ML-EO-Maps/data_selection.html</a>
 </li>
@@ -814,7 +928,7 @@ and <a href="https://www.geowgs84.ai/post/torchgeo-for-beginners-unlocking-ai-in
 <button class="accordion-button instructor-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInstructor1" aria-expanded="false" aria-controls="collapseInstructor1">
   <h3 class="accordion-header" id="headingInstructor1">  <div class="note-square"><i aria-hidden="true" class="callout-icon" data-feather="edit-2"></i></div> Instructor Note </h3>
 </button>
-<div id="collapseInstructor1" class="accordion-collapse collapse" aria-labelledby="headingInstructor1" data-bs-parent="#accordionInstructor1">
+<div id="collapseInstructor1" class="accordion-collapse collapse" data-bs-parent="#accordionInstructor1" aria-labelledby="headingInstructor1">
 <div class="accordion-body">
 <p>Notes for instructors</p>
 </div>
@@ -825,7 +939,12 @@ and <a href="https://www.geowgs84.ai/post/torchgeo-for-beginners-unlocking-ai-in
 Place links that you need to refer to multiple times across pages here. Delete
 any links that you are not going to use.
  -->
-</section></div> <!-- / div.lesson-content -->
+</div>
+</div>
+
+
+
+      </div> <!-- / div.lesson-content -->
     </main><!-- / main#main-content.main-content --><nav class="bottom-pagination mx-md-4" aria-label="Previous and Next Chapter Bottom"><div class="d-block d-sm-block d-md-none">
         <a class="chapter-link" href="../instructor/05-feature-engineering.html"><i aria-hidden="true" class="small-arrow" data-feather="arrow-left"></i>Previous</a>
         <a class="chapter-link float-end" href="../instructor/07-geo-foundations.html">Next<i aria-hidden="true" class="small-arrow" data-feather="arrow-right"></i></a>
